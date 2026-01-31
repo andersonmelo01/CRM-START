@@ -14,8 +14,10 @@ class Consulta extends Model
         'data',
         'hora',
         'status',
-        'observacoes'
+        'observacoes',
+        'retorno' // ADD
     ];
+
 
     public function paciente()
     {
@@ -34,5 +36,9 @@ class Consulta extends Model
     public function pagamento()
     {
         return $this->hasOne(Pagamento::class);
+    }
+    public function exames()
+    {
+        return $this->hasMany(PedidoExame::class);
     }
 }

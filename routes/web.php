@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BloqueioController;
 use App\Http\Controllers\EmitenteController;
 use App\Http\Controllers\PagamentoController;
+use App\Http\Controllers\PedidoExameController;
 use App\Http\Controllers\RelatorioFinanceiroController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UsuarioController;
@@ -41,10 +42,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/consultas/{consulta}/prontuario', [ProntuarioController::class, 'create'])->name('prontuarios.create');
     Route::post('/consultas/{consulta}/prontuario', [ProntuarioController::class, 'store'])->name('prontuarios.store');
     Route::get('/consultas/{consulta}/prontuario/ver', [ProntuarioController::class, 'show'])->name('prontuarios.show');
+    Route::get('/consultas/{consulta}/exames', [PedidoExameController::class, 'porConsulta'])->name('consultas.exames');
+
 
     //Route::get('/prontuario', [ProntuarioController::class, 'create'])->name('prontuarios.create');
     Route::get('/prontuarios/{prontuario}', [ProntuarioController::class, 'show'])->name('prontuarios.show');
-    //Route::get('/prontuarios/{consulta}', [ProntuarioController::class, 'show'])->name('prontuarios.show');
+    
+    Route::get('/pacientes/{paciente}/historico', [PacienteController::class, 'historico'])->name('pacientes.historico');
+
+
+    Route::post('/exames/{consulta}', [PedidoExameController::class, 'store'])->name('exames.store');
+    Route::put('/exames/{exame}/resultado', [PedidoExameController::class, 'updateResultado'])->name('exames.resultado');
+
 
     Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
     Route::get('/agenda/eventos', [AgendaController::class, 'eventos']);

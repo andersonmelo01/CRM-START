@@ -114,21 +114,21 @@
             <div class="col-md-4">
                 <div class="card p-3 bg-success text-white">
                     Total Recebido <br>
-                    R$ {{ \App\Models\Pagamento::where('status','pago')->sum('valor') }}
+                    R$ {{ number_format($totalRecebido,2,',','.') }}
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="card p-3 bg-warning">
                     Pendentes <br>
-                    R$ {{ \App\Models\Pagamento::where('status','pendente')->sum('valor') }}
+                    R$ {{ number_format($totalPendente,2,',','.') }}
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="card p-3 bg-info text-white">
                     Hoje <br>
-                    R$ {{ \App\Models\Pagamento::whereDate('data_pagamento', now())->sum('valor') }}
+                    R$ {{ number_format($totalHoje,2,',','.') }}
                 </div>
             </div>
         </div>

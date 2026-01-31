@@ -43,7 +43,7 @@ class UsuarioController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'perfil' => 'required|in:admin,medico,paciente',
+            'perfil' => 'required|in:admin,medico,recepcao',
             'password' => 'nullable|string|min:6|confirmed',
         ]);
 

@@ -31,10 +31,16 @@ class ProntuarioController extends Controller
             ->route('consultas.show', $consulta)
             ->with('success', 'Prontuário salvo com sucesso!');
     }
-    public function show(Consulta $consulta)
+    public function show($id)
     {
-        $consulta->load('prontuario', 'paciente', 'medico');
+        $consulta = Consulta::with([
+            'paciente',
+            'medico',
+            'prontuario'
+        ])->findOrFail($id);
 
-        return view('prontuarios.show', compact('consulta'));
+        $prontuario = $consulta->prontuario;
+
+        return view('prontuarios.show', compact('consulta', 'prontuario'));
     }
 }

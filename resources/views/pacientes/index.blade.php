@@ -23,6 +23,12 @@
                 <button class="btn btn-danger">Excluir</button>
             </form>
         </td>
+        <td>
+            <a href="{{ route('pacientes.historico', $p->id) }}"
+                class="btn btn-sm btn-outline-dark">
+                Histórico
+            </a>
+        </td>
     </tr>
     @endforeach
 </table>

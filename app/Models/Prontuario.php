@@ -19,4 +19,8 @@ class Prontuario extends Model
     {
         return $this->belongsTo(Consulta::class);
     }
+    public function exames()
+    {
+        return $this->hasMany(PedidoExame::class);
+    }
 }

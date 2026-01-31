@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Consulta;
 use App\Models\Paciente;
+use App\Models\Pagamento;
+
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -12,17 +15,62 @@ class DashboardController extends Controller
     public function index()
     {
         $hoje = Carbon::today();
+        $user = Auth::user();
+
+        $consultaQuery = Consulta::query();
+
+        // 👨‍⚕️ médico vê só dele
+        if ($user && $user->can('perfil_medico') && $user->medico) {
+            $consultaQuery->where('medico_id', $user->medico->id);
+        }
+
+        // 💰 financeiro (filtrado por médico se necessário)
+        $pagamentoQuery = Pagamento::query();
+
+        if ($user && $user->can('perfil_medico') && $user->medico) {
+            $pagamentoQuery->whereHas('consulta', function ($q) use ($user) {
+                $q->where('medico_id', $user->medico->id);
+            });
+        }
 
         return view('dashboard', [
+
             'totalPacientes' => Paciente::count(),
-            'consultasHoje' => Consulta::whereDate('data', $hoje)->count(),
-            'consultasMes' => Consulta::whereMonth('data', now()->month)->count(),
-            'atendidas' => Consulta::where('status', 'atendida')->count(),
-            'canceladas' => Consulta::where('status', 'cancelada')->count(),
-            'agendaHoje' => Consulta::with('paciente')
+
+            'consultasHoje' => (clone $consultaQuery)
+                ->whereDate('data', $hoje)
+                ->count(),
+
+            'consultasMes' => (clone $consultaQuery)
+                ->whereMonth('data', now()->month)
+                ->count(),
+
+            'atendidas' => (clone $consultaQuery)
+                ->where('status', 'atendida')
+                ->count(),
+
+            'canceladas' => (clone $consultaQuery)
+                ->where('status', 'cancelada')
+                ->count(),
+
+            'agendaHoje' => (clone $consultaQuery)
+                ->with('paciente')
                 ->whereDate('data', $hoje)
                 ->orderBy('hora')
                 ->get(),
+
+            // ✅ variáveis que sua view usa
+            'totalRecebido' => (clone $pagamentoQuery)
+                ->where('status', 'pago')
+                ->sum('valor'),
+
+            'totalPendente' => (clone $pagamentoQuery)
+                ->where('status', 'pendente')
+                ->sum('valor'),
+
+            'totalHoje' => (clone $pagamentoQuery)
+                ->whereDate('data_pagamento', $hoje)
+                ->sum('valor'),
         ]);
     }
 }

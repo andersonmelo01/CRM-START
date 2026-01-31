@@ -28,7 +28,7 @@
             <select name="perfil" class="form-control">
                 <option value="admin" {{ old('perfil', $user->perfil) == 'admin' ? 'selected' : '' }}>Admin</option>
                 <option value="medico" {{ old('perfil', $user->perfil) == 'medico' ? 'selected' : '' }}>Médico</option>
-                <option value="paciente" {{ old('perfil', $user->perfil) == 'paciente' ? 'selected' : '' }}>Paciente</option>
+                <option value="recepcao" {{ old('perfil', $user->perfil) == 'recepcao' ? 'selected' : '' }}>Recepção</option>
             </select>
             @error('perfil') <small class="text-danger">{{ $message }}</small> @enderror
         </div>

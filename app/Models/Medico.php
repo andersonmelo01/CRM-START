@@ -34,4 +34,8 @@ class Medico extends Model
             ->where('hora_fim', '>=', $hora)
             ->exists();
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

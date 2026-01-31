@@ -119,7 +119,11 @@ class ConsultaController extends Controller
 
     public function update(Request $request, Consulta $consulta)
     {
-        $consulta->update($request->all());
+        $consulta->update([
+            'status' => $request->status,
+            'retorno' => $request->retorno ?? false
+        ]);
+
         return back();
     }
 

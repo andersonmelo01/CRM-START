@@ -21,28 +21,63 @@ class AgendaController extends Controller
         return view('agenda.index', compact('medicos', 'pacientes', 'consultas'));
     }
 
-    public function eventos()
+    public function eventos(Request $request)
     {
-        $consultas = Consulta::with('paciente', 'medico')->get();
+        $query = Consulta::with('paciente', 'medico');
+
+        // filtro por médico
+        if ($request->medico_id) {
+            $query->where('medico_id', $request->medico_id);
+        }
+
+        $consultas = $query->get();
 
         return response()->json(
             $consultas->map(function ($c) {
 
-                $cor = match ($c->status) {
-                    'agendada' => '#f0ad4e',
-                    'atendida' => '#5cb85c',
-                    'cancelada' => '#d9534f',
+                // 🎨 paleta moderna
+                $cores = match ($c->status) {
+                    'agendada' => [
+                        'bg' => '#3b82f6',   // azul moderno
+                        'border' => '#2563eb'
+                    ],
+                    'atendida' => [
+                        'bg' => '#22c55e',   // verde
+                        'border' => '#16a34a'
+                    ],
+                    'cancelada' => [
+                        'bg' => '#ef4444',   // vermelho
+                        'border' => '#dc2626'
+                    ],
+                    default => [
+                        'bg' => '#6b7280',
+                        'border' => '#4b5563'
+                    ]
                 };
 
                 return [
                     'id' => $c->id,
-                    'title' => $c->paciente->nome . ' - ' . $c->medico->nome,
+
+                    // título mais limpo
+                    'title' => $c->paciente->nome,
+
                     'start' => $c->data . 'T' . $c->hora,
-                    'color' => $cor,
+
+                    // 🎨 estilos visuais
+                    'backgroundColor' => $cores['bg'],
+                    'borderColor' => $cores['border'],
+                    'textColor' => '#ffffff',
+
+                    // info extra (pode usar no tooltip depois)
+                    'extendedProps' => [
+                        'medico' => $c->medico->nome,
+                        'status' => $c->status
+                    ],
                 ];
             })
         );
     }
+
     public function atualizar(Request $request, $id)
     {
         $consulta = Consulta::findOrFail($id);
@@ -67,7 +102,11 @@ class AgendaController extends Controller
     }
     public function show($id)
     {
-        return Consulta::findOrFail($id);
+        //return Consulta::findOrFail($id);
+        $consulta = Consulta::with(['paciente', 'medico', 'prontuario'])
+            ->findOrFail($id);
+
+        return view('prontuarios.show', compact('consulta'));
     }
 
     public function atualizarDetalhes(Request $request, $id)

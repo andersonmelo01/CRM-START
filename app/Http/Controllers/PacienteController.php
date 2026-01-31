@@ -58,4 +58,20 @@ class PacienteController extends Controller
         $paciente->delete();
         return redirect()->route('pacientes.index');
     }
+
+    public function historico(Paciente $paciente)
+    {
+        $consultas = $paciente->consultas()
+            ->with([
+                'medico',
+                'prontuario',
+                'exames',
+                'pagamento'
+            ])
+            ->orderByDesc('data')
+            ->orderByDesc('hora')
+            ->get();
+
+        return view('pacientes.historico', compact('paciente', 'consultas'));
+    }
 }

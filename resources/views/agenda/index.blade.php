@@ -5,46 +5,127 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Agenda/title>
+    <title>Agenda</title>
 
-        <title>CRM Médico</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>CRM Médico</title>
+    <link rel="stylesheet" href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/bootstrap-icons/bootstrap-icons.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
 
 </head>
 <!-- Adicione CSS para estilizar a classe .sidebar se necessário -->
 <style>
-    .sidebar {
-        position: fixed;
-        /* Ou sticky */
-        height: 100vh;
-        padding-top: 1rem;
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: #f4f6f9;
     }
 
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        height: 100vh;
+        padding-top: 1rem;
+        background: #ffffff;
+        border-right: 1px solid #eee;
+    }
+
+    .list-group-item {
+        border: none;
+        border-radius: 12px;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .list-group-item.active {
+        background: #0d6efd;
+    }
+
+    /* Calendar Card */
     #calendar {
         max-width: 1200px;
         margin: 30px auto;
-        background: #fff;
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, .05);
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+    }
+
+    /* Toolbar */
+    .fc-toolbar {
+        margin-bottom: 15px;
     }
 
     .fc-toolbar-title {
         font-weight: 600;
-        font-size: 1.4rem;
+        font-size: 1.5rem;
+        letter-spacing: 0.5px;
     }
 
     .fc-button {
-        border-radius: 6px !important;
+        border-radius: 12px !important;
+        border: none !important;
+        background: #0d6efd !important;
+        padding: 6px 14px !important;
+        font-weight: 500;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+        transition: all .15s ease;
+    }
+
+    .fc-button:hover {
+        background: #0b5ed7 !important;
+        transform: translateY(-1px);
+    }
+
+    /* Eventos */
+    .fc-event {
+        border-radius: 10px !important;
+        border: none !important;
+        padding: 3px 6px !important;
+        font-size: 0.85rem;
+        font-weight: 500;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+        transition: all .15s ease;
+    }
+
+    .fc-event:hover {
+        transform: scale(1.03);
+        filter: brightness(1.05);
+    }
+
+    /* Grade mais suave */
+    .fc-theme-standard td,
+    .fc-theme-standard th {
+        border-color: #eef1f5;
+    }
+
+    .fc-timegrid-slot {
+        height: 42px !important;
+    }
+
+    /* Linha hora atual */
+    .fc-timegrid-now-indicator-line {
+        border-color: #dc3545;
+        border-width: 2px;
+    }
+
+    /* Modais */
+    .modal-content {
+        border-radius: 16px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
     }
 </style>
 
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+
+        let medicoSelecionado = '';
 
         const calendar = new FullCalendar.Calendar(
             document.getElementById('calendar'), {
@@ -52,12 +133,16 @@
                 initialView: 'timeGridWeek',
                 locale: 'pt-br',
                 editable: true,
-                selectable: true, // ✅ obrigatório
+                selectable: true,
                 slotMinTime: '07:00:00',
                 slotMaxTime: '19:00:00',
                 allDaySlot: false,
                 nowIndicator: true,
                 height: 'auto',
+
+                loading: function(isLoading) {
+                    document.body.style.cursor = isLoading ? 'wait' : 'default';
+                },
 
                 headerToolbar: {
                     left: 'prev,next today',
@@ -65,22 +150,27 @@
                     right: 'timeGridDay,timeGridWeek,dayGridMonth'
                 },
 
-                slotMinTime: '07:00:00',
-                slotMaxTime: '19:00:00',
                 slotDuration: '00:30:00',
-
-                //events: '/agenda/eventos',
 
                 eventSources: [{
                         url: '/agenda/eventos',
-                        method: 'GET'
+                        method: 'GET',
+                        extraParams: function() {
+                            return {
+                                medico_id: medicoSelecionado
+                            }
+                        }
                     },
                     {
                         url: '/bloqueios/eventos',
-                        method: 'GET'
+                        method: 'GET',
+                        extraParams: function() {
+                            return {
+                                medico_id: medicoSelecionado
+                            }
+                        }
                     }
                 ],
-
 
                 dateClick: function(info) {
 
@@ -129,16 +219,58 @@
 
                             document.getElementById('consulta_id').value = c.id;
                             document.getElementById('status').value = c.status;
-                            document.getElementById('observacoes').value = c.observacoes ?? '';
+                            document.getElementById('observacoes_consulta').value = c.observacoes ?? '';
+
+                            let btnArea = document.getElementById('btnProntuario');
+
+                            // ✅ REGRA DE LIBERAÇÃO
+                            if (c.status === 'agendada') {
+
+                                if (c.prontuario) {
+                                    btnArea.innerHTML =
+                                        `<a href="/prontuarios/${c.id}" class="btn btn-info btn-sm">
+                            Ver Prontuário
+                         </a>`;
+                                } else {
+                                    btnArea.innerHTML =
+                                        `<a href="/prontuarios/create/${c.id}" class="btn btn-primary btn-sm">
+                            Iniciar Consulta
+                         </a>`;
+                                }
+
+                            } else {
+
+                                // ❌ NÃO AGENDADA → só visualizar se existir
+                                if (c.prontuario) {
+                                    btnArea.innerHTML =
+                                        `<a href="/prontuarios/${c.id}" class="btn btn-secondary btn-sm">
+                            Ver Prontuário
+                         </a>`;
+                                } else {
+                                    btnArea.innerHTML =
+                                        `<button class="btn btn-secondary btn-sm" disabled>
+                            Prontuário indisponível
+                         </button>`;
+                                }
+                            }
 
                             new bootstrap.Modal(
                                 document.getElementById('consultaModal')
                             ).show();
                         });
                 }
+
             });
 
         calendar.render();
+
+        // ✅ FILTRO MÉDICO — recarregar eventos
+        document.getElementById('filtro_medico')
+            .addEventListener('change', function() {
+                medicoSelecionado = this.value;
+                calendar.refetchEvents();
+            });
+
     });
 </script>
 
@@ -155,7 +287,7 @@
                 },
                 body: JSON.stringify({
                     status: document.getElementById('status').value,
-                    observacoes: document.getElementById('observacoes').value
+                    observacoes: document.getElementById('observacoes_consulta').value
                 })
             })
             .then(() => location.reload());
@@ -181,7 +313,7 @@
         const medico = document.getElementById('medico_id')?.value;
         const data = document.getElementById('data')?.value;
         const hora = document.getElementById('hora')?.value;
-        const obs = document.getElementById('observacoes')?.value;
+        const obs = document.getElementById('observacoes_nova')?.value;
 
         if (!paciente || !medico || !data || !hora) {
             alert('Preencha todos os campos obrigatórios');
@@ -217,7 +349,7 @@
 
 <body>
     <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded-bottom">
             <div class="container">
 
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -287,12 +419,23 @@
 
             <!-- Conteúdo Principal -->
             <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!--Filtro de Médico-->
+                <div class="mb-3">
+                    <label><strong>Filtrar por Médico</strong></label>
+                    <select id="filtro_medico" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach(\App\Models\Medico::all() as $m)
+                        <option value="{{ $m->id }}">{{ $m->nome }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <!--Calendar-->
                 <div id="calendar"></div>
                 <!-- Modal -->
-                @foreach($consultas as $c)
-                <div class="modal fade" id="consultaModal">
+                <div class="modal fade" id="consultaModal" tabindex="-1">
                     <div class="modal-dialog">
                         <div class="modal-content">
+
                             <div class="modal-header">
                                 <h5 class="modal-title">Consulta</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -300,39 +443,39 @@
 
                             <div class="modal-body">
                                 <input type="hidden" id="consulta_id">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Status</label>
+                                    <select id="status" class="form-select">
+                                        <option value="agendada">Agendada</option>
+                                        <option value="atendida">Atendida</option>
+                                        <option value="cancelada">Cancelada</option>
+                                    </select>
+                                </div>
 
-                                <label>Status</label>
-                                <select id="status" class="form-control">
-                                    <option value="agendada">Agendada</option>
-                                    <option value="atendida">Atendida</option>
-                                    <option value="cancelada">Cancelada</option>
-                                </select>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Observações</label>
+                                    <textarea id="observacoes_consulta" class="form-control" rows="4"></textarea>
+                                </div>
 
-                                <label class="mt-2">Observações</label>
-                                <textarea id="observacoes" class="form-control"></textarea>
                             </div>
+
 
                             <div class="modal-footer">
-                                @if($c->prontuario)
-                                <a href="{{ route('prontuarios.show', $c) }}"
-                                    class="btn btn-info btn-sm">
-                                    Ver Prontuário
-                                </a>
-                                @else
-                                <a href="{{ route('prontuarios.create', $c) }}"
-                                    class="btn btn-primary btn-sm">
-                                    Iniciar Consulta
-                                </a>
-                                @endif
+
+                                <!-- botão prontuário dinâmico -->
+                                <span id="btnProntuario"></span>
+
                                 <button class="btn btn-danger" onclick="excluir()">Excluir</button>
                                 <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+
                             </div>
+
                         </div>
                     </div>
                 </div>
-                @endforeach
+
                 <!-- Modal Nova Consulta -->
-                <div class="modal fade" id="novaConsultaModal">
+                <div class="modal fade" id="novaConsultaModal" tabindex="-1">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -342,28 +485,45 @@
 
                             <div class="modal-body">
 
-                                <label>Paciente</label>
-                                <select id="paciente_id" class="form-control">
-                                    @foreach(\App\Models\Paciente::all() as $p)
-                                    <option value="{{ $p->id }}">{{ $p->nome }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="row g-3">
 
-                                <label class="mt-2">Médico</label>
-                                <select id="medico_id" class="form-control">
-                                    @foreach(\App\Models\Medico::all() as $m)
-                                    <option value="{{ $m->id }}">{{ $m->nome }}</option>
-                                    @endforeach
-                                </select>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Paciente</label>
+                                        <select id="paciente_id" class="form-select">
+                                            @foreach(\App\Models\Paciente::all() as $p)
+                                            <option value="{{ $p->id }}">{{ $p->nome }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
 
-                                <label class="mt-2">Data</label>
-                                <input type="date" id="data" class="form-control">
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Médico</label>
+                                        <select id="medico_id" class="form-select">
+                                            @foreach(\App\Models\Medico::all() as $m)
+                                            <option value="{{ $m->id }}">{{ $m->nome }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
 
-                                <label class="mt-2">Hora</label>
-                                <input type="time" id="hora" class="form-control">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Data</label>
+                                        <input type="date" id="data" class="form-control">
+                                    </div>
 
-                                <label class="mt-2">Observações</label>
-                                <textarea id="observacoes" class="form-control"></textarea>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Hora</label>
+                                        <input type="time" id="hora" class="form-control">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Observações</label>
+                                        <textarea id="observacoes_nova"
+                                            class="form-control"
+                                            rows="4"
+                                            placeholder="Digite observações da consulta (opcional)"></textarea>
+                                    </div>
+
+                                </div>
 
                             </div>
 
@@ -382,8 +542,8 @@
             </div>
         </div>
     </div>
+    <script src="{{ asset('assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 
 </html>
