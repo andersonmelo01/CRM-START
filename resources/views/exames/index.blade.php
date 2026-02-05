@@ -64,20 +64,10 @@
 
             <form method="POST" action="{{ route('exames.store', $consulta->id) }}">
                 @csrf
-
-                <div class="row g-3 align-items-end">
-
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">
-                            Tipo de Exame
-                        </label>
-
-                        <select name="exame_padrao"
-                            id="exame_padrao"
-                            class="form-select form-select-lg"
-                            onchange="toggleOutroExame()"
-                            required>
-
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>Tipo</label>
+                        <select name="tipo_exame" class="form-select">
                             <option value="">Selecione...</option>
 
                             <optgroup label="Laboratoriais">
@@ -107,29 +97,18 @@
                             </optgroup>
 
                             <option value="outro">Outro exame...</option>
-
                         </select>
                     </div>
 
-
-                    <div class="col-md-6 d-none" id="outro_exame_box">
-                        <label class="form-label fw-semibold">
-                            Nome do Exame
-                        </label>
-
-                        <input name="nome_outro"
-                            class="form-control form-control-lg"
-                            placeholder="Digite o nome do exame">
+                    <div class="col-md-8">
+                        <label>Descrição</label>
+                        <textarea name="descricao" rows="3" class="form-control"></textarea>
                     </div>
-
-
-                    <div class="col-md-3 d-grid">
-                        <button class="btn btn-success btn-lg">
-                            Solicitar
-                        </button>
-                    </div>
-
                 </div>
+
+                <button class="btn btn-warning mt-3">
+                    Solicitar Exame
+                </button>
             </form>
 
         </div>
@@ -149,6 +128,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>Exame</th>
+                        <th>Data</th>
                         <th width="160">Status</th>
                         <th>Resultado</th>
                     </tr>
@@ -157,11 +137,12 @@
                 <tbody>
                     @forelse($consulta->exames as $ex)
                     <tr>
-
                         <td class="fw-semibold">
-                            {{ $ex->nome }}
+                            {{ $ex->tipo_exame }}
                         </td>
-
+                        <td class="fw-semibold">
+                            {{ $ex->data_solicitacao }}
+                        </td>
                         <td>
                             @if($ex->status == 'solicitado')
                             <span class="badge bg-warning text-dark">

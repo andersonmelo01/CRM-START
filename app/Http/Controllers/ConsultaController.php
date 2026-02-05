@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\EnviarLembreteConsulta;
 use Illuminate\Http\Request;
 use App\Models\Consulta;
 use App\Models\Paciente;
 use App\Models\Medico;
 use App\Models\Bloqueio;
 use App\Models\Pagamento;
+use App\Services\WhatsAppService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -65,7 +67,7 @@ class ConsultaController extends Controller
         $bloqueado = Bloqueio::where('medico_id', $request->medico_id)
             ->where('data', $request->data)
             ->where(function ($q) use ($hora) {
-                $q->whereNull('hora_inicio') // bloqueio do dia todo
+                $q->whereNull('hora_inicio')
                     ->orWhere(function ($q) use ($hora) {
                         $q->where('hora_inicio', '<=', $hora)
                             ->where('hora_fim', '>=', $hora);
@@ -88,11 +90,13 @@ class ConsultaController extends Controller
 
         if ($existe) {
             return back()
-                ->withErrors(['hora' => 'Horário bloqueado para este médico'])
+                ->withErrors(['hora' => 'Horário já ocupado'])
                 ->withInput();
         }
 
         DB::transaction(function () use ($request) {
+
+            // ✅ CRIA CONSULTA
             $consulta = Consulta::create([
                 'paciente_id' => $request->paciente_id,
                 'medico_id'   => $request->medico_id,
@@ -102,20 +106,52 @@ class ConsultaController extends Controller
                 'observacoes' => $request->observacoes,
             ]);
 
+            // 💰 PAGAMENTO
             Pagamento::create([
-                'consulta_id'    => $consulta->id,
-                'valor'          => $request->valor,
-                'valor_pago'     => $request->valor_pago,
+                'consulta_id'     => $consulta->id,
+                'valor'           => $request->valor,
+                'valor_pago'      => $request->valor_pago,
                 'forma_pagamento' => $request->forma_pagamento,
-                'status'         => $request->status_pagamento,
-                'data_pagamento' => $request->status_pagamento === 'pago'
+                'status'          => $request->status_pagamento,
+                'data_pagamento'  => $request->status_pagamento === 'pago'
                     ? now()
                     : null,
             ]);
+
+            // 📲 ENVIA WHATSAPP AO AGENDAR
+            $paciente = $consulta->paciente;
+            $medico   = $consulta->medico;
+
+            if ($paciente->telefone) {
+
+                $dataHora = Carbon::parse(
+                    $consulta->data . ' ' . $consulta->hora
+                )->format('d/m/Y H:i');
+
+                $mensagem = "📅 *Consulta Agendada!*\n\n"
+                    . "Paciente: {$paciente->nome}\n"
+                    . "Médico: {$medico->nome}\n"
+                    . "Data: {$dataHora}\n\n"
+                    . "Qualquer dúvida, entre em contato.";
+
+                $telefone = preg_replace('/\D/', '', $paciente->telefone);
+                WhatsAppService::send($telefone, $mensagem);
+
+
+                // ⏰ AGENDA LEMBRETE 30 MIN ANTES
+                $inicio = Carbon::parse($consulta->data . ' ' . $consulta->hora);
+                $delay  = $inicio->subMinutes(30);
+
+                EnviarLembreteConsulta::dispatch($consulta)
+                    ->delay($delay);
+            }
         });
 
-        return redirect()->route('consultas.index');
+        return redirect()
+            ->route('consultas.index')
+            ->with('success', 'Consulta agendada e notificação enviada!');
     }
+
 
     public function update(Request $request, Consulta $consulta)
     {

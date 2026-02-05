@@ -36,7 +36,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('pacientes', PacienteController::class);
     Route::resource('medicos', MedicoController::class);
     Route::resource('consultas', ConsultaController::class);
-    Route::get('/', [SiteController::class, 'index'])->name('config');
+    Route::get('/config', [SiteController::class, 'index'])->name('config');
 
     Route::get('/consultas/create', [ConsultaController::class, 'create'])->name('consultas.create');
     Route::get('/consultas/{consulta}/prontuario', [ProntuarioController::class, 'create'])->name('prontuarios.create');

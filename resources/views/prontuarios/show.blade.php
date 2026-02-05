@@ -45,7 +45,17 @@
             </div>
 
             <hr>
+            {{-- Obs de entrada --}}
+            <div class="mb-4">
+                <h6 class="text-primary mb-2">
+                    <i class="bi bi-chat-left-text me-1"></i>
+                    Deu entrada queixando-se de
+                </h6>
 
+                <div class="border rounded p-3 bg-light">
+                    {{ $consulta?->observacoes ?? 'Não informado' }}
+                </div>
+            </div>
             {{-- Queixa --}}
             <div class="mb-4">
                 <h6 class="text-primary mb-2">
@@ -54,7 +64,7 @@
                 </h6>
 
                 <div class="border rounded p-3 bg-light">
-                    {{ $consulta->prontuario?->queixa ?? 'Não informado' }}
+                    {{ $consulta->prontuario?->queixa_principal ?? 'Não informado' }}
                 </div>
             </div>
 
@@ -82,6 +92,17 @@
                 </div>
             </div>
 
+            {{-- Prescrição --}}
+            <div class="mb-4">
+                <h6 class="text-success mb-2">
+                    <i class="bi bi-chat-left-text me-1"></i>
+                    Prescrição
+                </h6>
+
+                <div class="border rounded p-3 bg-light">
+                    {{ $consulta->prontuario?->prescricao ?? 'Não informado' }}
+                </div>
+            </div>
         </div>
 
         <div class="card-footer text-end d-flex justify-content-between">
@@ -236,12 +257,17 @@
 
                 <hr>
 
-                <h6 class="text-primary">Queixa Principal</h6>
+                <h6 class="text-danger">Deu entrada queixando-se</h6>
                 <div class="border p-3 rounded bg-light mb-3">
-                    {{ $consulta->prontuario?->queixa ?? 'Não informado' }}
+                    {{ $consulta?->observacoes ?? 'Não informado' }}
                 </div>
 
-                <h6 class="text-success">Diagnóstico</h6>
+                <h6 class="text-primary">Queixa Principal</h6>
+                <div class="border p-3 rounded bg-light mb-3">
+                    {{ $consulta->prontuario?->queixa_principal ?? 'Não informado' }}
+                </div>
+
+                <h6 class="text-danger">Diagnóstico</h6>
                 <div class="border p-3 rounded bg-light mb-3">
                     {{ $consulta->prontuario?->diagnostico ?? 'Não informado' }}
                 </div>
@@ -251,9 +277,9 @@
                     {{ $consulta->prontuario?->conduta ?? 'Não informado' }}
                 </div>
 
-                <h6 class="text-secondary">Observações</h6>
+                <h6 class="text-success">Prescrição</h6>
                 <div class="border p-3 rounded bg-light mb-4">
-                    {{ $consulta->prontuario?->observacoes ?? 'Não informado' }}
+                    {{ $consulta->prontuario?->prescricao ?? 'Não informado' }}
                 </div>
 
                 <h5 class="mt-4">Exames Vinculados</h5>

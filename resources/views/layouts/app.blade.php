@@ -24,110 +24,167 @@
 </head>
 
 <style>
-    body {
-        font-family: 'Poppins', sans-serif;
-        background: #f4f6f9;
+    :root {
+        --primary: #1d4ed8;
+        --secondary: #10b981;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
     }
 
-    /* Navbar */
+    body {
+        font-family: 'Nunito', 'Poppins', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+    }
+
+    /* NAVBAR */
     .navbar {
-        border-bottom: 1px solid #eee;
-        backdrop-filter: blur(6px);
+        background: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid #e5e7eb;
+        backdrop-filter: blur(10px);
     }
 
     .navbar-brand {
         font-weight: 600;
+        font-size: 1.2rem;
         letter-spacing: .4px;
     }
 
-    /* Sidebar */
+    /* SIDEBAR */
     .sidebar {
-        position: fixed;
-        height: 100vh;
-        padding: 20px 12px;
-        background: #ffffff;
-        border-right: 1px solid #eee;
+        background: linear-gradient(180deg, #ffffff, #f9fafb);
+        border-right: 1px solid #e5e7eb;
+        padding: 22px 14px;
     }
 
     .list-group-item {
         border: none;
-        border-radius: 12px;
-        margin-bottom: 6px;
+        border-radius: 14px;
+        margin-bottom: 8px;
+        padding: 12px 16px;
         font-weight: 500;
-        color: #495057;
-        transition: all .15s ease;
+        font-size: 0.95rem;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all .2s ease;
+    }
+
+    .list-group-item i {
+        font-size: 1.1rem;
+        color: var(--primary);
     }
 
     .list-group-item:hover {
-        background: #f1f3f5;
-        transform: translateX(3px);
+        background: #eef2ff;
+        transform: translateX(4px);
     }
 
     .list-group-item.active {
-        background: #0d6efd;
+        background: linear-gradient(135deg, var(--primary), #2563eb);
         color: white;
-        box-shadow: 0 4px 12px rgba(13, 110, 253, .25);
+        box-shadow: 0 8px 22px rgba(29, 78, 216, .35);
     }
 
-    /* Conteúdo principal */
+    .list-group-item.active i {
+        color: white;
+    }
+
+    /* CONTEÚDO */
     .col-lg-10 {
-        padding-top: 25px;
+        padding-top: 28px;
+        padding-bottom: 30px;
     }
 
-    /* Cards padrão */
+    /* CARDS */
     .card {
         border: none;
-        border-radius: 16px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+        border-radius: 20px;
+        background: var(--card);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, .06);
     }
 
-    /* Botões */
+    .card-header {
+        background: transparent;
+        border-bottom: 1px solid #f1f5f9;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    /* BOTÕES */
     .btn {
-        border-radius: 12px;
-        font-weight: 500;
-        padding: 6px 14px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 8px 18px;
+        transition: all .2s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), #2563eb);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        opacity: .9;
+        transform: translateY(-1px);
     }
 
     .btn-outline-primary {
-        border-width: 2px;
+        border: 2px solid var(--primary);
+        color: var(--primary);
     }
 
-    /* Dropdown */
-    .dropdown-menu {
+    /* FORMULÁRIOS */
+    .form-control,
+    .form-select {
         border-radius: 14px;
-        border: none;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+        border: 1px solid #e5e7eb;
+        padding: 10px 14px;
+        font-size: .9rem;
     }
 
-    /* Títulos */
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 .2rem rgba(29, 78, 216, .15);
+    }
+
+    /* MODAL */
+    .modal-content {
+        border-radius: 22px;
+        border: none;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, .25);
+    }
+
+    /* DROPDOWN */
+    .dropdown-menu {
+        border-radius: 18px;
+        border: none;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, .15);
+    }
+
+    /* TÍTULOS */
     h1,
     h2,
     h3,
     h4,
     h5 {
+        font-family: 'Poppins', sans-serif;
         font-weight: 600;
         letter-spacing: .3px;
     }
 
-    /* Form */
-    .form-control,
-    .form-select {
-        border-radius: 12px;
-        padding: 8px 12px;
-        border: 1px solid #e5e7eb;
+    small,
+    .text-muted {
+        color: var(--muted) !important;
     }
-
-    .form-control:focus {
-        box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
-    }
-
-    /* Modal */
-    .modal-content {
-        border-radius: 18px;
-        border: none;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, .18);
-    }
+   
 </style>
+
 
 <body>
 

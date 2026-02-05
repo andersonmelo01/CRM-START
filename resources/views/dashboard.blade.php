@@ -4,7 +4,9 @@
 
 @section('conteudo')
 
+@if (auth()->user()->name)
 
+@endif
 <div class="container">
 
     <h3 class="mb-4">📊 Dashboard</h3>

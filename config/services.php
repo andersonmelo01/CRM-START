@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'zapi' => [
+        'instance' => env('ZAPI_INSTANCE'),
+        'token'    => env('ZAPI_TOKEN'),
+    ],
+
 ];

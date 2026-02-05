@@ -7,11 +7,18 @@ use Illuminate\Http\Request;
 
 class PacienteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pacientes = Paciente::all();
+        $pacientes = Paciente::when($request->filled('search'), function ($query) use ($request) {
+            $query->where('nome', 'like', '%' . $request->search . '%')
+                ->orWhere('cpf', 'like', '%' . $request->search . '%');
+        })
+            ->orderBy('nome')
+            ->paginate(10);
+
         return view('pacientes.index', compact('pacientes'));
     }
+
 
     public function create()
     {

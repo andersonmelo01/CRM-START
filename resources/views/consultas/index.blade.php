@@ -3,8 +3,9 @@
 @section('titulo', 'Consultas')
 
 @section('conteudo')
-<div class="container">
+<div class="container-fluid py-3">
 
+    {{-- ALERTAS --}}
     @if ($errors->any())
     <div class="alert alert-danger shadow-sm">
         <ul class="mb-0">
@@ -15,41 +16,61 @@
     </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">Agenda do Dia</h3>
+    {{-- CABEÇALHO --}}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">
+                <i class="bi bi-calendar-week text-primary me-2"></i>
+                Agenda de Consultas
+            </h4>
+            <small class="text-muted">
+                Gerenciamento diário de atendimentos
+            </small>
+        </div>
 
         <div class="d-flex gap-2">
             <a href="{{ route('consultas.create') }}" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i>
                 Nova Consulta
             </a>
+
             <a href="/bloqueios" class="btn btn-outline-secondary">
+                <i class="bi bi-lock"></i>
                 Bloqueios
             </a>
         </div>
     </div>
 
     {{-- FILTRO --}}
-    <form method="GET"
-        action="{{ route('consultas.index') }}"
-        class="mb-3 d-flex gap-2">
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form method="GET"
+                action="{{ route('consultas.index') }}"
+                class="row g-2 align-items-end">
 
-        <input type="date"
-            name="data"
-            value="{{ $data }}"
-            class="form-control w-25">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Data</label>
+                    <input type="date"
+                        name="data"
+                        value="{{ $data }}"
+                        class="form-control">
+                </div>
 
-        <button class="btn btn-primary">
-            Filtrar
-        </button>
-
-    </form>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i>
+                        Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     {{-- TABELA --}}
     <div class="card shadow-sm">
-        <div class="card-body p-0">
-
+        <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-primary">
+                <thead class="table-light">
                     <tr>
                         <th>Hora</th>
                         <th>Paciente</th>
@@ -59,30 +80,35 @@
                         <th>Exames</th>
                         <th>Observações</th>
                         <th>Pagamento</th>
-                        <th width="160">Alterar Status</th>
+                        <th width="170">Status Consulta</th>
                     </tr>
                 </thead>
 
                 <tbody>
-
                     @forelse($consultas as $c)
-                    @php
-                    $pagamento = $c->pagamento;
-                    @endphp
+                    @php $pagamento = $c->pagamento; @endphp
 
                     <tr>
-                        <td class="fw-semibold">{{ $c->hora }}</td>
+                        <td class="fw-bold text-primary">
+                            {{ $c->hora }}
+                        </td>
 
-                        <td>{{ $c->paciente->nome }}</td>
+                        <td>
+                            <i class="bi bi-person me-1 text-muted"></i>
+                            {{ $c->paciente->nome }}
+                        </td>
 
-                        <td>{{ $c->medico->nome }}</td>
+                        <td>
+                            <i class="bi bi-person-badge me-1 text-muted"></i>
+                            {{ $c->medico->nome }}
+                        </td>
 
                         {{-- STATUS --}}
                         <td>
                             <span class="badge
-            @if($c->status=='agendada') bg-warning
-            @elseif($c->status=='atendida') bg-success
-            @else bg-danger @endif">
+                                    {{ $c->status == 'agendada' ? 'bg-warning' : '' }}
+                                    {{ $c->status == 'atendida' ? 'bg-success' : '' }}
+                                    {{ $c->status == 'cancelada' ? 'bg-danger' : '' }}">
                                 {{ ucfirst($c->status) }}
                             </span>
                         </td>
@@ -92,56 +118,52 @@
                             @if($c->prontuario)
                             <a href="{{ route('prontuarios.show',$c) }}"
                                 class="btn btn-info btn-sm">
-                                Ver
+                                <i class="bi bi-eye"></i>
                             </a>
                             @else
                             <a href="{{ route('prontuarios.create',$c) }}"
                                 class="btn btn-primary btn-sm">
-                                Iniciar
+                                <i class="bi bi-file-earmark-plus"></i>
                             </a>
                             @endif
                         </td>
 
-                        {{-- EXAMES / RETORNO --}}
+                        {{-- EXAMES --}}
                         <td>
                             <a href="{{ route('consultas.exames',$c) }}"
                                 class="btn btn-outline-dark btn-sm">
-                                Exames
+                                <i class="bi bi-clipboard2-pulse"></i>
                             </a>
                         </td>
 
-                        {{-- OBS --}}
-                        <td class="text-muted small">
-                            {{ $c->observacoes }}
+                        {{-- OBSERVAÇÕES --}}
+                        <td class="text-muted small" style="max-width:200px">
+                            {{ Str::limit($c->observacoes, 50) }}
                         </td>
 
                         {{-- PAGAMENTO --}}
                         <td>
-
                             @if($pagamento && $pagamento->status=='pendente')
-
                             <button class="btn btn-warning btn-sm"
                                 data-bs-toggle="modal"
                                 data-bs-target="#receberPagamentoModal{{ $pagamento->id }}">
+                                <i class="bi bi-cash"></i>
                                 Pendente
                             </button>
 
                             @elseif($pagamento && $pagamento->status=='pago')
-
                             <span class="badge bg-success">Pago</span>
 
                             <a href="{{ route('pagamentos.recibo',$pagamento) }}"
                                 target="_blank"
                                 class="btn btn-outline-primary btn-sm ms-1">
-                                Recibo
+                                <i class="bi bi-receipt"></i>
                             </a>
-
                             @else
                             <span class="badge bg-secondary">
                                 Sem pagamento
                             </span>
                             @endif
-
                         </td>
 
                         {{-- ALTERAR STATUS --}}
@@ -160,15 +182,13 @@
                                 </select>
                             </form>
                         </td>
-
                     </tr>
 
-                    {{-- MODAL PAGAMENTO EMBUTIDO --}}
+                    {{-- MODAL PAGAMENTO --}}
                     @if($pagamento)
                     <div class="modal fade"
                         id="receberPagamentoModal{{ $pagamento->id }}"
                         tabindex="-1">
-
                         <div class="modal-dialog">
                             <div class="modal-content">
 
@@ -179,15 +199,15 @@
 
                                     <div class="modal-header">
                                         <h5 class="modal-title">
+                                            <i class="bi bi-cash-coin me-2"></i>
                                             Receber Pagamento
                                         </h5>
-                                        <button class="btn-close"
-                                            data-bs-dismiss="modal"></button>
+                                        <button class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
 
                                     <div class="modal-body">
-
-                                        <p><strong>Paciente:</strong>
+                                        <p>
+                                            <strong>Paciente:</strong>
                                             {{ $pagamento->consulta->paciente->nome }}
                                         </p>
 
@@ -215,11 +235,10 @@
                                                 class="form-control"
                                                 required>
                                         </div>
-
                                     </div>
 
                                     <div class="modal-footer">
-                                        <button class="btn btn-secondary"
+                                        <button class="btn btn-outline-secondary"
                                             data-bs-dismiss="modal">
                                             Cancelar
                                         </button>
@@ -228,8 +247,8 @@
                                             Confirmar
                                         </button>
                                     </div>
-
                                 </form>
+
                             </div>
                         </div>
                     </div>
@@ -237,17 +256,16 @@
 
                     @empty
                     <tr>
-                        <td colspan="9"
-                            class="text-center text-muted py-4">
-                            Nenhuma consulta nesta data
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="bi bi-calendar-x fs-3 d-block mb-2"></i>
+                            Nenhuma consulta encontrada para esta data
                         </td>
                     </tr>
                     @endforelse
-
                 </tbody>
             </table>
-
         </div>
     </div>
+
 </div>
 @endsection

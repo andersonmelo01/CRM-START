@@ -27,11 +27,19 @@
 
         .cupom {
             width: 100%;
-            max-width: 80mm;
-            /* 58mm ou 80mm */
-            margin: auto;
-            padding: 4mm;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
         }
+
+        /* formato padrão para impressora fiscal
+        .cupom {
+            width: 100%;
+            max-width: 80mm;
+            margin: auto;
+            padding: 5mm;
+        }
+        */
 
         .center {
             text-align: center;
@@ -49,9 +57,15 @@
             font-size: 9px;
         }
 
+        .title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
         .hr {
             border-top: 1px dashed #000;
-            margin: 4px 0;
+            margin: 6px 0;
         }
 
         .table {
@@ -64,22 +78,41 @@
             vertical-align: top;
         }
 
-        .footer {
-            margin-top: 6px;
-            text-align: center;
-            font-size: 9px;
+        .highlight {
+            font-size: 13px;
+            font-weight: bold;
         }
 
-        @media print {
-            .no-print {
-                display: none;
-            }
+        .status {
+            margin: 6px 0;
+            padding: 4px 0;
+            border: 1px dashed #000;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 9px;
         }
 
         .print-area {
             display: flex;
             justify-content: center;
             margin-top: 15px;
+        }
+
+        .print-area button {
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -89,7 +122,7 @@
     <div class="cupom">
 
         {{-- EMITENTE --}}
-        <div class="center bold">
+        <div class="center title">
             {{ $emitente->nome }}
         </div>
 
@@ -104,7 +137,7 @@
             {{ $emitente->cidade }}{{ $emitente->cidade && $emitente->uf ? ' - ' : '' }}{{ $emitente->uf }}<br>
             @endif
 
-            @if($emitente->telefone ?? ' não informado')
+            @if($emitente->telefone)
             Tel: {{ $emitente->telefone }}
             @endif
         </div>
@@ -115,7 +148,9 @@
         <table class="table">
             <tr>
                 <td>Recibo Nº</td>
-                <td class="right bold">{{ $pagamento->numero_recibo }}</td>
+                <td class="right bold">
+                    {{ $pagamento->numero_recibo }}
+                </td>
             </tr>
             <tr>
                 <td>Data</td>
@@ -127,15 +162,19 @@
 
         <div class="hr"></div>
 
-        {{-- PACIENTE --}}
+        {{-- DADOS DO PACIENTE --}}
         <table class="table">
             <tr>
                 <td>Paciente</td>
-                <td class="right">{{ $pagamento->consulta->paciente->nome }}</td>
+                <td class="right bold">
+                    {{ $pagamento->consulta->paciente->nome }}
+                </td>
             </tr>
             <tr>
                 <td>Procedimento</td>
-                <td class="right">Consulta</td>
+                <td class="right">
+                    Consulta Médica
+                </td>
             </tr>
         </table>
 
@@ -151,19 +190,15 @@
             </tr>
             <tr>
                 <td>Valor Pago</td>
-                <td class="right">
+                <td class="right highlight">
                     R$ {{ number_format($pagamento->valor_pago, 2, ',', '.') }}
                 </td>
             </tr>
         </table>
 
-        <div class="hr"></div>
-
-        <div class="center bold">
+        <div class="status">
             PAGAMENTO CONFIRMADO
         </div>
-
-        <div class="hr"></div>
 
         {{-- RODAPÉ --}}
         <div class="footer">
@@ -172,13 +207,12 @@
         </div>
 
     </div>
-
-    {{-- BOTÃO IMPRIMIR --}}
-    <div class="print-area no-print">
-        <button onclick="window.print()">
-            Imprimir
-        </button>
-    </div>
+    <!--Impressão-->
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
 
 </body>
 
