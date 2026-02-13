@@ -131,6 +131,7 @@
                         <th>Data</th>
                         <th width="160">Status</th>
                         <th>Resultado</th>
+                        <th width="120">Imprimir</th>
                     </tr>
                 </thead>
 
@@ -162,7 +163,13 @@
                         <td>
                             {{ $ex->resultado ?? '—' }}
                         </td>
-
+                        <td>
+                            <a href="{{ route('exames.imprimir', $ex) }}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-printer"></i>
+                            </a>
+                        </td>
                     </tr>
                     @empty
                     <tr>

@@ -43,7 +43,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/consultas/{consulta}/prontuario', [ProntuarioController::class, 'store'])->name('prontuarios.store');
     Route::get('/consultas/{consulta}/prontuario/ver', [ProntuarioController::class, 'show'])->name('prontuarios.show');
     Route::get('/consultas/{consulta}/exames', [PedidoExameController::class, 'porConsulta'])->name('consultas.exames');
-
+    Route::get('/consultas/{consulta}/whatsapp', [ConsultaController::class, 'whatsapp'])
+        ->name('consultas.whatsapp');
 
     //Route::get('/prontuario', [ProntuarioController::class, 'create'])->name('prontuarios.create');
     Route::get('/prontuarios/{prontuario}', [ProntuarioController::class, 'show'])->name('prontuarios.show');
@@ -53,7 +54,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/exames/{consulta}', [PedidoExameController::class, 'store'])->name('exames.store');
     Route::put('/exames/{exame}/resultado', [PedidoExameController::class, 'updateResultado'])->name('exames.resultado');
-
+    Route::get('/exames/{exame}/imprimir', [PedidoExameController::class, 'imprimir'])->name('exames.imprimir');
 
     Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
     Route::get('/agenda/eventos', [AgendaController::class, 'eventos']);

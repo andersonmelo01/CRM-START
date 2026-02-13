@@ -122,12 +122,13 @@
     </div>
 
     <!--Listar exames-->
-    <table class="table mt-3">
+    <table class="table mt-3" id="tabelaExames">
         <tr>
             <th>Tipo</th>
             <th>Status</th>
             <th>Data</th>
             <th>Resultado</th>
+            <th width="120">Imprimir</th>
         </tr>
 
         @foreach($consulta->exames as $ex)
@@ -149,11 +150,24 @@
                 {{ $ex->resultado }}
                 @endif
             </td>
+            <td>
+                <a href="{{ route('exames.imprimir', $ex) }}"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-printer"></i>
+                </a>
+            </td>
         </tr>
         @endforeach
     </table>
 
     <!--Pedido de exame-->
+    <div class="d-flex justify-content-end mt-3">
+        <button class="btn btn-outline-primary" onclick="imprimirExames('tabelaExames')">
+            <i class="bi bi-printer"></i> Imprimir Exames
+        </button>
+    </div>
+
     <hr>
     <h5 class="mt-4">Pedidos de Exame</h5>
 
@@ -320,16 +334,158 @@
     </div>
 </div>
 
-<!-- Script para imprimir modal -->
+<!-- Script para imprimir modal com ID da consulta e prontuário -->
 <script>
-    function imprimirModal(id) {
+    function imprimirModal(id, consultaId, prontuarioId) {
         var conteudo = document.getElementById(id).innerHTML;
+
         var janela = window.open('', '_blank', 'width=900,height=700');
-        janela.document.write('<html><head><title>Prontuário</title>');
-        janela.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">');
-        janela.document.write('</head><body>');
-        janela.document.write(conteudo);
-        janela.document.write('</body></html>');
+
+        janela.document.write(`
+        <html>
+        <head>
+            <title>Prontuário Médico</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+            <style>
+                body {
+                    font-family: Arial, Helvetica, sans-serif;
+                    background: #ffffff;
+                    padding: 30px;
+                    color: #000;
+                }
+
+                .print-container {
+                    max-width: 800px;
+                    margin: auto;
+                }
+
+                .cabecalho {
+                    border-bottom: 2px solid #0d6efd;
+                    margin-bottom: 20px;
+                    padding-bottom: 10px;
+                }
+
+                .cabecalho h2 {
+                    margin: 0;
+                    font-weight: bold;
+                    color: #0d6efd;
+                }
+
+                .cabecalho small {
+                    color: #555;
+                }
+
+                .info-topo {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 14px;
+                    margin-top: 10px;
+                }
+
+                .titulo-secao {
+                    background: #f1f5f9;
+                    padding: 8px 12px;
+                    border-left: 4px solid #0d6efd;
+                    font-weight: bold;
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                }
+
+                .box {
+                    border: 1px solid #dee2e6;
+                    border-radius: 6px;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                }
+
+                .assinatura {
+                    margin-top: 60px;
+                    text-align: center;
+                }
+
+                .assinatura .linha {
+                    border-top: 1px solid #000;
+                    width: 300px;
+                    margin: 0 auto 5px auto;
+                }
+
+                .no-print {
+                    display: none !important;
+                }
+
+                .page-break {
+                    page-break-before: always;
+                }
+
+                @media print {
+                    body {
+                        padding: 0;
+                    }
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="print-container">
+
+                <!-- Cabeçalho -->
+                <div class="cabecalho">
+                    <h2>Clínica Médica</h2>
+                    <small>Prontuário do Paciente</small>
+
+                    <div class="info-topo">
+                        <div><strong>ID da Consulta:</strong> ${consultaId}</div>
+                        <div><strong>Prontuário:</strong> ${prontuarioId}</div>
+                    </div>
+                </div>
+
+                ${conteudo}
+
+                <!-- Assinatura -->
+                <div class="assinatura">
+                    <div class="linha"></div>
+                    <small>Assinatura do Profissional Responsável</small>
+                </div>
+
+            </div>
+        </body>
+        </html>
+        `);
+
+        janela.document.close();
+        janela.focus();
+
+        setTimeout(() => {
+            janela.print();
+            janela.close();
+        }, 500);
+    }
+</script>
+
+<!-- Script para imprimir Exame -->
+<script>
+    function imprimirExames(id) {
+        var conteudo = document.getElementById(id).outerHTML;
+        var janela = window.open('', '_blank', 'width=900,height=700');
+
+        janela.document.write(`
+        <html>
+        <head>
+            <title>Exames da Consulta</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+                body { padding: 20px; }
+                h3 { margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+            <h3>Exames da Consulta #{{ $consulta->id }}</h3>
+            ${conteudo}
+        </body>
+        </html>
+    `);
+
         janela.document.close();
         janela.print();
     }

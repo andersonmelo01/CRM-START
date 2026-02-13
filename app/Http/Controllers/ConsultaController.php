@@ -10,8 +10,14 @@ use App\Models\Medico;
 use App\Models\Bloqueio;
 use App\Models\Pagamento;
 use App\Services\WhatsAppService;
-use Illuminate\Support\Carbon;
+//use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ConsultaAgendadaMail;
+use App\Jobs\EnviarLembreteConsultaEmail;
+use Carbon\Carbon;
+
+
 
 class ConsultaController extends Controller
 {
@@ -94,10 +100,12 @@ class ConsultaController extends Controller
                 ->withInput();
         }
 
-        DB::transaction(function () use ($request) {
+        $consultaCriada = null;
+
+        DB::transaction(function () use ($request, &$consultaCriada) {
 
             // ✅ CRIA CONSULTA
-            $consulta = Consulta::create([
+            $consultaCriada = Consulta::create([
                 'paciente_id' => $request->paciente_id,
                 'medico_id'   => $request->medico_id,
                 'data'        => $request->data,
@@ -108,7 +116,7 @@ class ConsultaController extends Controller
 
             // 💰 PAGAMENTO
             Pagamento::create([
-                'consulta_id'     => $consulta->id,
+                'consulta_id'     => $consultaCriada->id,
                 'valor'           => $request->valor,
                 'valor_pago'      => $request->valor_pago,
                 'forma_pagamento' => $request->forma_pagamento,
@@ -117,41 +125,28 @@ class ConsultaController extends Controller
                     ? now()
                     : null,
             ]);
-
-            // 📲 ENVIA WHATSAPP AO AGENDAR
-            $paciente = $consulta->paciente;
-            $medico   = $consulta->medico;
-
-            if ($paciente->telefone) {
-
-                $dataHora = Carbon::parse(
-                    $consulta->data . ' ' . $consulta->hora
-                )->format('d/m/Y H:i');
-
-                $mensagem = "📅 *Consulta Agendada!*\n\n"
-                    . "Paciente: {$paciente->nome}\n"
-                    . "Médico: {$medico->nome}\n"
-                    . "Data: {$dataHora}\n\n"
-                    . "Qualquer dúvida, entre em contato.";
-
-                $telefone = preg_replace('/\D/', '', $paciente->telefone);
-                WhatsAppService::send($telefone, $mensagem);
-
-
-                // ⏰ AGENDA LEMBRETE 30 MIN ANTES
-                $inicio = Carbon::parse($consulta->data . ' ' . $consulta->hora);
-                $delay  = $inicio->subMinutes(30);
-
-                EnviarLembreteConsulta::dispatch($consulta)
-                    ->delay($delay);
-            }
         });
+
+        // ================= LEMBRETE EMAIL (30 MIN) =================
+        $inicio = Carbon::parse($consultaCriada->data . ' ' . $consultaCriada->hora);
+        $envio  = $inicio->copy()->subMinutes(30);
+
+        if ($envio->isFuture()) {
+            \App\Jobs\EnviarLembreteConsultaEmail::dispatch($consultaCriada)->delay($envio);
+        }
+
+        // ================= EMAIL IMEDIATO =================
+        $consultaCriada->load(['paciente', 'medico']);
+
+        if ($consultaCriada->paciente && $consultaCriada->paciente->email) {
+            \Mail::to($consultaCriada->paciente->email)
+                ->send(new \App\Mail\ConsultaAgendadaMail($consultaCriada));
+        }
 
         return redirect()
             ->route('consultas.index')
-            ->with('success', 'Consulta agendada e notificação enviada!');
+            ->with('success', 'Consulta agendada e e-mail enviado!');
     }
-
 
     public function update(Request $request, Consulta $consulta)
     {
@@ -174,5 +169,38 @@ class ConsultaController extends Controller
         $consulta->load(['paciente', 'medico', 'prontuario']);
 
         return view('consultas.show', compact('consulta'));
+    }
+
+    public function whatsapp(Consulta $consulta)
+    {
+        $consulta->load(['paciente', 'medico']);
+
+        $paciente = $consulta->paciente;
+        $medico   = $consulta->medico;
+
+        if (!$paciente || !$paciente->telefone) {
+            return back()->with('error', 'Paciente sem telefone cadastrado.');
+        }
+
+        $dataHora = \Carbon\Carbon::parse(
+            $consulta->data . ' ' . $consulta->hora
+        )->format('d/m/Y H:i');
+
+        $mensagem = "📅 *Consulta Agendada!*\n\n"
+            . "Paciente: {$paciente->nome}\n"
+            . "Médico: {$medico->nome}\n"
+            . "Data: {$dataHora}\n\n"
+            . "Qualquer dúvida, entre em contato.";
+
+        $telefone = preg_replace('/\D/', '', $paciente->telefone);
+
+        // adiciona DDI Brasil se não tiver
+        if (substr($telefone, 0, 2) !== '55') {
+            $telefone = '55' . $telefone;
+        }
+
+        $link = "https://wa.me/{$telefone}?text=" . urlencode($mensagem);
+
+        return redirect()->away($link);
     }
 }

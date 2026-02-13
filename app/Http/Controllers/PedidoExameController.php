@@ -42,4 +42,11 @@ class PedidoExameController extends Controller
 
         return view('exames.index', compact('consulta'));
     }
+    public function imprimir($id)
+    {
+        $exame = PedidoExame::with(['consulta.paciente', 'consulta.medico'])
+            ->findOrFail($id);
+
+        return view('exames.imprimir', compact('exame'));
+    }
 }

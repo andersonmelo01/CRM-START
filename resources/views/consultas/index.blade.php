@@ -80,6 +80,7 @@
                         <th>Exames</th>
                         <th>Observações</th>
                         <th>Pagamento</th>
+                        <th>WhatsApp</th>
                         <th width="170">Status Consulta</th>
                     </tr>
                 </thead>
@@ -163,6 +164,18 @@
                             <span class="badge bg-secondary">
                                 Sem pagamento
                             </span>
+                            @endif
+                        </td>
+                        {{-- WHATSAPP --}}
+                        <td>
+                            @if($c->paciente && $c->paciente->telefone)
+                            <a href="{{ route('consultas.whatsapp', $c) }}"
+                                target="_blank"
+                                class="btn btn-success btn-sm">
+                                <i class="bi bi-whatsapp"></i>
+                            </a>
+                            @else
+                            <span class="badge bg-secondary">Sem telefone</span>
                             @endif
                         </td>
 
