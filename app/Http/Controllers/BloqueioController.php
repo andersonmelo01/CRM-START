@@ -18,7 +18,16 @@ class BloqueioController extends Controller
     public function store(Request $request)
     {
         Bloqueio::create($request->all());
-        return back()->with('success', 'Horário bloqueado!');
+        return redirect()->route('bloqueios.bloqueados')->with('success', 'Horário bloqueado!');
+    }
+
+    public function destroy($id)
+    {
+        $bloqueio = Bloqueio::findOrFail($id);
+        $bloqueio->delete();
+
+        return redirect()->route('bloqueios.bloqueados')
+            ->with('success', 'Horário desbloqueado com sucesso!');
     }
 
     public function eventos()
@@ -36,22 +45,24 @@ class BloqueioController extends Controller
     }
     public function medicosBloqueados()
     {
-        $hoje  = now()->format('Y-m-d');
-        $agora = now()->format('H:i');
+        // Todos os bloqueios, incluindo bloqueios gerais (sem médico)
+        $bloqueios = Bloqueio::with('medico')
+            ->orderBy('data', 'desc')
+            ->get();
 
+        // Opcional: todos os médicos (se precisar na view)
         $medicos = Medico::all();
-        /*$medicos = Medico::whereHas('bloqueios', function ($q) use ($hoje, $agora) {
-            $q->where('data', $hoje)
-                ->whereTime('hora_inicio', '<=', $agora)
-                ->whereTime('hora_fim', '>=', $agora);
-        })
-            ->with(['bloqueios' => function ($q) use ($hoje, $agora) {
-                $q->where('data', $hoje)
-                    ->whereTime('hora_inicio', '<=', $agora)
-                    ->whereTime('hora_fim', '>=', $agora);
-            }])
-            ->get();*/
 
-        return view('bloqueios.bloqueados', compact('medicos'));
+        return view('bloqueios.bloqueados', compact('bloqueios', 'medicos'));
+    }
+    public function bloqueados()
+    {
+        // Todos os médicos
+        $medicos = Medico::with('bloqueios')->get();
+
+        // Todos os bloqueios (ou filtrar por data, futuro, etc.)
+        $bloqueios = Bloqueio::with('medico')->orderBy('data', 'desc')->get();
+
+        return view('bloqueios.bloqueados', compact('medicos', 'bloqueios'));
     }
 }

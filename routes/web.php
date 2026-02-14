@@ -4,6 +4,7 @@ use App\Http\Controllers\MedicoController;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\AgendamentoPublicoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProntuarioController;
 use App\Http\Controllers\DashboardController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\BloqueioController;
 use App\Http\Controllers\EmitenteController;
 use App\Http\Controllers\PagamentoController;
 use App\Http\Controllers\PedidoExameController;
+use App\Http\Controllers\PreCadastroController;
 use App\Http\Controllers\RelatorioFinanceiroController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UsuarioController;
@@ -18,9 +20,22 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Bloqueio;
 
 Route::get('/', function () {
-    return view('auth.login');
+    return view('welcome');
 });
 
+//agendamento publico
+Route::get('/agendar', [AgendamentoPublicoController::class, 'index'])->name('agendamento.publico');
+Route::post('/agendar', [AgendamentoPublicoController::class, 'store'])->name('agendamento.publico.store');
+Route::get('/agendamento/horarios', [AgendamentoPublicoController::class, 'horarios']);
+Route::get('/agendamento/verificar-cpf', [AgendamentoPublicoController::class, 'verificarCpf']);
+//pré-cadastro
+Route::get('/precadastro', function () {
+    return view('pre-cadastro');
+});
+
+Route::get('/pre-cadastro', [PreCadastroController::class, 'index'])->name('pre-cadastro');
+Route::post('/pre-cadastro/salvar', [PreCadastroController::class, 'store'])->name('pre-cadastro.store');
+//Route::post('/precadastro/salvar', [PreCadastroController::class, 'salvar']);
 
 Route::middleware(['auth'])->group(function () {
 
@@ -43,8 +58,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/consultas/{consulta}/prontuario', [ProntuarioController::class, 'store'])->name('prontuarios.store');
     Route::get('/consultas/{consulta}/prontuario/ver', [ProntuarioController::class, 'show'])->name('prontuarios.show');
     Route::get('/consultas/{consulta}/exames', [PedidoExameController::class, 'porConsulta'])->name('consultas.exames');
-    Route::get('/consultas/{consulta}/whatsapp', [ConsultaController::class, 'whatsapp'])
-        ->name('consultas.whatsapp');
+    //whatsapp
+    Route::get('/consultas/{consulta}/whatsapp', [ConsultaController::class, 'whatsapp'])->name('consultas.whatsapp');
+    Route::get('/consultas/{consulta}/whatsappPreCadastroConsulta', [ConsultaController::class, 'whatsappPreCadastroConsulta'])->name('consultas.whatsappPreCadastroConsulta');
+
 
     //Route::get('/prontuario', [ProntuarioController::class, 'create'])->name('prontuarios.create');
     Route::get('/prontuarios/{prontuario}', [ProntuarioController::class, 'show'])->name('prontuarios.show');
@@ -64,9 +81,21 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/agenda/consulta/{id}', [AgendaController::class, 'excluir']);
     Route::post('/agenda', [AgendaController::class, 'criar']);
 
-    Route::get('/bloqueios', [BloqueioController::class, 'index']);
-    Route::post('/bloqueios', [BloqueioController::class, 'store'])->name('bloqueios.store');
-    Route::get('/bloqueios/eventos', [BloqueioController::class, 'eventos']);
+
+    // Rotas de bloqueios
+    Route::prefix('bloqueios')->group(function () {
+        Route::get('/', [\App\Http\Controllers\BloqueioController::class, 'index'])->name('bloqueios.index');
+        Route::get('/create', [\App\Http\Controllers\BloqueioController::class, 'create'])->name('bloqueios.create');
+        Route::post('/', [\App\Http\Controllers\BloqueioController::class, 'store'])->name('bloqueios.store');
+
+        // Rota de exclusão (desbloquear)
+        Route::delete('/{bloqueio}', [\App\Http\Controllers\BloqueioController::class, 'destroy'])->name('bloqueios.destroy');
+
+        // Bloqueados (URL diferente!)
+        Route::get('/lista', [\App\Http\Controllers\BloqueioController::class, 'bloqueados'])->name('bloqueios.bloqueados');
+    });
+
+
 
     Route::get('/emitente', [EmitenteController::class, 'edit'])->name('emitente.edit');
     Route::post('/emitente', [EmitenteController::class, 'store'])->name('emitente.store');

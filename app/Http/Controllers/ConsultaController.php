@@ -139,9 +139,15 @@ class ConsultaController extends Controller
         $consultaCriada->load(['paciente', 'medico']);
 
         if ($consultaCriada->paciente && $consultaCriada->paciente->email) {
-            \Mail::to($consultaCriada->paciente->email)
-                ->send(new \App\Mail\ConsultaAgendadaMail($consultaCriada));
+            try {
+                \Mail::to($consultaCriada->paciente->email)
+                    ->send(new \App\Mail\ConsultaAgendadaMail($consultaCriada));
+            } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
+                // Loga o erro, mas não trava a página
+                \Log::error('Erro ao enviar email: ' . $e->getMessage());
+            }
         }
+
 
         return redirect()
             ->route('consultas.index')
@@ -190,6 +196,54 @@ class ConsultaController extends Controller
             . "Paciente: {$paciente->nome}\n"
             . "Médico: {$medico->nome}\n"
             . "Data: {$dataHora}\n\n"
+            . "Qualquer dúvida, entre em contato.";
+
+        $telefone = preg_replace('/\D/', '', $paciente->telefone);
+
+        // adiciona DDI Brasil se não tiver
+        if (substr($telefone, 0, 2) !== '55') {
+            $telefone = '55' . $telefone;
+        }
+
+        $link = "https://wa.me/{$telefone}?text=" . urlencode($mensagem);
+
+        // ================= EMAIL IMEDIATO =================
+        //$consultaCriada = null;
+        //$consultaCriada->load(['paciente', 'medico']);
+
+        if ($consulta->paciente && $consulta->paciente->email) {
+            try {
+                \Mail::to($consulta->paciente->email)
+                    ->send(new \App\Mail\ConsultaAgendadaMail($consulta));
+            } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
+                // Loga o erro, mas não trava a página
+                \Log::error('Erro ao enviar email: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->away($link);
+    }
+    public function whatsappPreCadastroConsulta(Consulta $consulta)
+    {
+        $consulta->load(['paciente', 'medico']);
+
+        $paciente = $consulta->paciente;
+        $medico   = $consulta->medico;
+
+        if (!$paciente || !$paciente->telefone) {
+            return back()->with('error', 'Paciente sem telefone cadastrado.');
+        }
+
+        $dataHora = \Carbon\Carbon::parse(
+            $consulta->data . ' ' . $consulta->hora
+        )->format('d/m/Y H:i');
+
+        $mensagem = "📅 *Precisamos confirmar sua consulta*\n\n"
+            . "Paciente: {$paciente->nome}\n"
+            . "Médico: {$medico->nome}\n"
+            . "Data: {$dataHora}\n\n"
+            . "Se confirma digita: CONFIRMADO\n"
+            . "Se não confirma digite: NÂO-CONFIRMADO\n"
             . "Qualquer dúvida, entre em contato.";
 
         $telefone = preg_replace('/\D/', '', $paciente->telefone);

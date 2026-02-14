@@ -6,14 +6,23 @@ use Illuminate\Http\Request;
 use App\Models\Pagamento;
 use App\Models\Consulta;
 use App\Models\Emitente;
-
+use Carbon\Carbon;
 
 class PagamentoController extends Controller
 {
     public function index()
     {
-        $pagamentos = Pagamento::with('consulta.paciente')->get();
-        return view('pagamentos.index', compact('pagamentos'));
+        // Se não escolher data, usa HOJE
+        $data = $request->data ?? Carbon::today()->format('Y-m-d');
+
+        $pagamentos = Pagamento::with('consulta.paciente')
+            ->whereDate('data_pagamento', $data)
+            ->orderBy('data_pagamento', 'desc')
+            ->get();
+
+        return view('pagamentos.index', compact('pagamentos', 'data'));
+        //$pagamentos = Pagamento::with('consulta.paciente')->get();
+        //return view('pagamentos.index', compact('pagamentos'));
     }
 
     public function create()

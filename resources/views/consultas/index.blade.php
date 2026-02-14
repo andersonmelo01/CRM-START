@@ -33,11 +33,6 @@
                 <i class="bi bi-plus-circle me-1"></i>
                 Nova Consulta
             </a>
-
-            <a href="/bloqueios" class="btn btn-outline-secondary">
-                <i class="bi bi-lock"></i>
-                Bloqueios
-            </a>
         </div>
     </div>
 
@@ -89,10 +84,8 @@
                     @forelse($consultas as $c)
                     @php $pagamento = $c->pagamento; @endphp
 
-                    <tr>
-                        <td class="fw-bold text-primary">
-                            {{ $c->hora }}
-                        </td>
+                    <tr class="@if($c->status == 'pre-cadastro') table-warning @endif">
+                        <td class="fw-bold text-primary">{{ $c->hora }}</td>
 
                         <td>
                             <i class="bi bi-person me-1 text-muted"></i>
@@ -107,34 +100,41 @@
                         {{-- STATUS --}}
                         <td>
                             <span class="badge
-                                    {{ $c->status == 'agendada' ? 'bg-warning' : '' }}
-                                    {{ $c->status == 'atendida' ? 'bg-success' : '' }}
-                                    {{ $c->status == 'cancelada' ? 'bg-danger' : '' }}">
+                                @if($c->status == 'pre-cadastro') bg-secondary
+                                @elseif($c->status == 'agendada') bg-warning
+                                @elseif($c->status == 'atendida') bg-success
+                                @elseif($c->status == 'cancelada') bg-danger
+                                @endif">
                                 {{ ucfirst($c->status) }}
                             </span>
                         </td>
 
                         {{-- PRONTUÁRIO --}}
                         <td>
+                            @if($c->status != 'pre-cadastro')
                             @if($c->prontuario)
-                            <a href="{{ route('prontuarios.show',$c) }}"
-                                class="btn btn-info btn-sm">
+                            <a href="{{ route('prontuarios.show',$c) }}" class="btn btn-info btn-sm">
                                 <i class="bi bi-eye"></i>
                             </a>
                             @else
-                            <a href="{{ route('prontuarios.create',$c) }}"
-                                class="btn btn-primary btn-sm">
+                            <a href="{{ route('prontuarios.create',$c) }}" class="btn btn-primary btn-sm">
                                 <i class="bi bi-file-earmark-plus"></i>
                             </a>
+                            @endif
+                            @else
+                            <span class="badge bg-secondary">Bloqueado</span>
                             @endif
                         </td>
 
                         {{-- EXAMES --}}
                         <td>
-                            <a href="{{ route('consultas.exames',$c) }}"
-                                class="btn btn-outline-dark btn-sm">
+                            @if($c->status != 'pre-cadastro')
+                            <a href="{{ route('consultas.exames',$c) }}" class="btn btn-outline-dark btn-sm">
                                 <i class="bi bi-clipboard2-pulse"></i>
                             </a>
+                            @else
+                            <span class="badge bg-secondary">Bloqueado</span>
+                            @endif
                         </td>
 
                         {{-- OBSERVAÇÕES --}}
@@ -151,62 +151,74 @@
                                 <i class="bi bi-cash"></i>
                                 Pendente
                             </button>
-
                             @elseif($pagamento && $pagamento->status=='pago')
                             <span class="badge bg-success">Pago</span>
-
                             <a href="{{ route('pagamentos.recibo',$pagamento) }}"
                                 target="_blank"
                                 class="btn btn-outline-primary btn-sm ms-1">
                                 <i class="bi bi-receipt"></i>
                             </a>
                             @else
-                            <span class="badge bg-secondary">
-                                Sem pagamento
-                            </span>
+                            <span class="badge bg-secondary">Sem pagamento</span>
                             @endif
                         </td>
+
                         {{-- WHATSAPP --}}
                         <td>
+                            @if($c->status != 'pre-cadastro')
                             @if($c->paciente && $c->paciente->telefone)
-                            <a href="{{ route('consultas.whatsapp', $c) }}"
-                                target="_blank"
-                                class="btn btn-success btn-sm">
+                            <a href="{{ route('consultas.whatsapp', $c) }}" target="_blank" class="btn btn-success btn-sm">
                                 <i class="bi bi-whatsapp"></i>
                             </a>
                             @else
                             <span class="badge bg-secondary">Sem telefone</span>
                             @endif
+                            @else
+                            @if($c->paciente && $c->paciente->telefone)
+                            <a href="{{ route('consultas.whatsappPreCadastroConsulta', $c) }}" target="_blank" class="btn btn-success btn-sm">
+                                <i class="bi bi-whatsapp"></i>
+                            </a>
+                            @else
+                            <span class="badge bg-secondary">Sem telefone</span>
+                            @endif
+                            @endif
+
+
                         </td>
 
                         {{-- ALTERAR STATUS --}}
                         <td>
-                            <form method="POST"
-                                action="{{ route('consultas.update',$c) }}">
+                            @php
+                            $user = auth()->user();
+                            $podeAlterar = in_array($user->perfil, ['admin','recepcao']); // ajuste conforme sua coluna de perfil
+                            @endphp
+
+                            @if($podeAlterar)
+                            <form method="POST" action="{{ route('consultas.update',$c) }}">
                                 @csrf
                                 @method('PUT')
-
-                                <select name="status"
-                                    class="form-select form-select-sm"
+                                <select name="status" class="form-select form-select-sm"
                                     onchange="this.form.submit()">
+                                    <option value="pre-cadastro" @selected($c->status=='pre-cadastro')>Pré-Cadastro</option>
                                     <option value="agendada" @selected($c->status=='agendada')>Agendada</option>
                                     <option value="atendida" @selected($c->status=='atendida')>Atendida</option>
                                     <option value="cancelada" @selected($c->status=='cancelada')>Cancelada</option>
                                 </select>
                             </form>
+                            @else
+                            <span class="badge bg-secondary">Sem permissão</span>
+                            @endif
                         </td>
+
+
                     </tr>
 
                     {{-- MODAL PAGAMENTO --}}
                     @if($pagamento)
-                    <div class="modal fade"
-                        id="receberPagamentoModal{{ $pagamento->id }}"
-                        tabindex="-1">
+                    <div class="modal fade" id="receberPagamentoModal{{ $pagamento->id }}" tabindex="-1">
                         <div class="modal-dialog">
                             <div class="modal-content">
-
-                                <form method="POST"
-                                    action="{{ route('pagamentos.receber',$pagamento) }}">
+                                <form method="POST" action="{{ route('pagamentos.receber',$pagamento) }}">
                                     @csrf
                                     @method('PATCH')
 
@@ -219,49 +231,29 @@
                                     </div>
 
                                     <div class="modal-body">
-                                        <p>
-                                            <strong>Paciente:</strong>
-                                            {{ $pagamento->consulta->paciente->nome }}
-                                        </p>
+                                        <p><strong>Paciente:</strong> {{ $pagamento->consulta->paciente->nome }}</p>
 
                                         <div class="mb-3">
                                             <label>Valor Consulta</label>
-                                            <input type="number"
-                                                step="0.01"
-                                                name="valor"
-                                                class="form-control"
-                                                value="{{ $pagamento->valor }}">
+                                            <input type="number" step="0.01" name="valor" class="form-control" value="{{ $pagamento->valor }}">
                                         </div>
 
                                         <div class="mb-3">
                                             <label>Já Pago</label>
-                                            <input class="form-control"
-                                                value="{{ $pagamento->valor_pago ?? 0 }}"
-                                                readonly>
+                                            <input class="form-control" value="{{ $pagamento->valor_pago ?? 0 }}" readonly>
                                         </div>
 
                                         <div class="mb-3">
                                             <label>Receber Agora</label>
-                                            <input type="number"
-                                                step="0.01"
-                                                name="valor_pago"
-                                                class="form-control"
-                                                required>
+                                            <input type="number" step="0.01" name="valor_pago" class="form-control" required>
                                         </div>
                                     </div>
 
                                     <div class="modal-footer">
-                                        <button class="btn btn-outline-secondary"
-                                            data-bs-dismiss="modal">
-                                            Cancelar
-                                        </button>
-
-                                        <button class="btn btn-success">
-                                            Confirmar
-                                        </button>
+                                        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button class="btn btn-success">Confirmar</button>
                                     </div>
                                 </form>
-
                             </div>
                         </div>
                     </div>
@@ -269,7 +261,7 @@
 
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">
+                        <td colspan="10" class="text-center text-muted py-4">
                             <i class="bi bi-calendar-x fs-3 d-block mb-2"></i>
                             Nenhuma consulta encontrada para esta data
                         </td>
@@ -279,6 +271,7 @@
             </table>
         </div>
     </div>
+
 
 </div>
 @endsection

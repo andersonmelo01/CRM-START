@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Teste Modal Consulta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="p-5">
+
+    <!-- Botão de teste -->
+    <button id="abrirModal" class="btn btn-primary">Abrir Consulta Modal</button>
+
+    <!-- Modal Consulta -->
+    <div class="modal fade" id="consultaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Consulta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="consulta_id">
+                    <div class="mb-3">
+                        <label>Status</label>
+                        <select id="status" class="form-select">
+                            <option value="agendada">Agendada</option>
+                            <option value="atendida">Atendida</option>
+                            <option value="cancelada">Cancelada</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Observações</label>
+                        <textarea id="observacoes_consulta" class="form-control" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span id="btnProntuario"></span>
+                    <button class="btn btn-danger">Excluir</button>
+                    <button class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Inicializa modal
+        const consultaModal = new bootstrap.Modal(document.getElementById('consultaModal'));
+
+        // Botão de teste abre modal
+        document.getElementById('abrirModal').addEventListener('click', () => {
+            consultaModal.show();
+        });
+    </script>
+</body>
+
+</html>

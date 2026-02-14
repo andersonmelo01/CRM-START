@@ -24,7 +24,7 @@ return new class extends Migration
 
             $table->date('data');
             $table->time('hora');
-            $table->enum('status', ['agendada', 'atendida', 'cancelada'])
+            $table->enum('status', ['agendada', 'atendida', 'cancelada', 'pre-cadastro'])
                 ->default('agendada');
 
             $table->text('observacoes')->nullable();
