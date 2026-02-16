@@ -10,216 +10,233 @@
     <link rel="stylesheet" href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/bootstrap-icons/bootstrap-icons.css') }}">
 
-    <!-- Fonte moderna -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <!-- FullCalendar -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #10b981;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(180deg, #f8fafc, #eef2f7);
+            color: var(--text);
+        }
+
+        /* NAVBAR */
+        .navbar {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.85);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            min-height: 100vh;
+            padding: 20px 14px;
+            transition: all .3s ease;
+        }
+
+        .list-group-item {
+            border: none;
+            border-radius: 14px;
+            margin-bottom: 6px;
+            padding: 12px 14px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+            transition: all .2s ease;
+        }
+
+        .list-group-item i {
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .list-group-item:hover {
+            background: #eef2ff;
+            transform: translateX(4px);
+        }
+
+        .list-group-item.active {
+            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            color: white;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, .35);
+        }
+
+        .list-group-item.active i {
+            color: white;
+        }
+
+        /* CONTEÚDO */
+        .content-wrapper {
+            padding: 28px 28px 40px;
+        }
+
+        /* CARDS */
+        .card {
+            border: none;
+            border-radius: 22px;
+            background: var(--card);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .06);
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid #f1f5f9;
+            font-weight: 600;
+        }
+
+        /* BOTÕES */
+        .btn {
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: .85rem;
+            padding: 8px 18px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, .25);
+        }
+
+        /* FORM */
+        .form-control,
+        .form-select {
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            padding: 10px 14px;
+            font-size: .9rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 .15rem rgba(37, 99, 235, .15);
+        }
+
+        /* MODAL */
+        .modal-content {
+            border-radius: 24px;
+            border: none;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, .25);
+        }
+
+        /* MOBILE + TABLET */
+        @media (max-width: 991px) {
+            body {
+                font-family: 'Playfair Display', serif;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                width: 260px;
+                z-index: 1050;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, .15);
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .content-wrapper {
+                padding: 20px 16px 40px;
+            }
+        }
+
+        /* OVERLAY MOBILE */
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            backdrop-filter: blur(2px);
+            z-index: 1040;
+            display: none;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* TÍTULOS */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-weight: 600;
+            letter-spacing: .3px;
+        }
+
+        small,
+        .text-muted {
+            color: var(--muted) !important;
+        }
+    </style>
 </head>
-
-<style>
-    :root {
-        --primary: #1d4ed8;
-        --secondary: #10b981;
-        --bg: #f8fafc;
-        --card: #ffffff;
-        --text: #1f2937;
-        --muted: #6b7280;
-    }
-
-    body {
-        font-family: 'Nunito', 'Poppins', sans-serif;
-        background: var(--bg);
-        color: var(--text);
-    }
-
-    /* NAVBAR */
-    .navbar {
-        background: rgba(255, 255, 255, 0.9);
-        border-bottom: 1px solid #e5e7eb;
-        backdrop-filter: blur(10px);
-    }
-
-    .navbar-brand {
-        font-weight: 600;
-        font-size: 1.2rem;
-        letter-spacing: .4px;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-        background: linear-gradient(180deg, #ffffff, #f9fafb);
-        border-right: 1px solid #e5e7eb;
-        padding: 22px 14px;
-    }
-
-    .list-group-item {
-        border: none;
-        border-radius: 14px;
-        margin-bottom: 8px;
-        padding: 12px 16px;
-        font-weight: 500;
-        font-size: 0.95rem;
-        color: var(--text);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: all .2s ease;
-    }
-
-    .list-group-item i {
-        font-size: 1.1rem;
-        color: var(--primary);
-    }
-
-    .list-group-item:hover {
-        background: #eef2ff;
-        transform: translateX(4px);
-    }
-
-    .list-group-item.active {
-        background: linear-gradient(135deg, var(--primary), #2563eb);
-        color: white;
-        box-shadow: 0 8px 22px rgba(29, 78, 216, .35);
-    }
-
-    .list-group-item.active i {
-        color: white;
-    }
-
-    /* CONTEÚDO */
-    .col-lg-10 {
-        padding-top: 28px;
-        padding-bottom: 30px;
-    }
-
-    /* CARDS */
-    .card {
-        border: none;
-        border-radius: 20px;
-        background: var(--card);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, .06);
-    }
-
-    .card-header {
-        background: transparent;
-        border-bottom: 1px solid #f1f5f9;
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-
-    /* BOTÕES */
-    .btn {
-        border-radius: 14px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: 8px 18px;
-        transition: all .2s ease;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary), #2563eb);
-        border: none;
-    }
-
-    .btn-primary:hover {
-        opacity: .9;
-        transform: translateY(-1px);
-    }
-
-    .btn-outline-primary {
-        border: 2px solid var(--primary);
-        color: var(--primary);
-    }
-
-    /* FORMULÁRIOS */
-    .form-control,
-    .form-select {
-        border-radius: 14px;
-        border: 1px solid #e5e7eb;
-        padding: 10px 14px;
-        font-size: .9rem;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 .2rem rgba(29, 78, 216, .15);
-    }
-
-    /* MODAL */
-    .modal-content {
-        border-radius: 22px;
-        border: none;
-        box-shadow: 0 25px 60px rgba(0, 0, 0, .25);
-    }
-
-    /* DROPDOWN */
-    .dropdown-menu {
-        border-radius: 18px;
-        border: none;
-        box-shadow: 0 18px 40px rgba(0, 0, 0, .15);
-    }
-
-    /* TÍTULOS */
-    h1,
-    h2,
-    h3,
-    h4,
-    h5 {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 600;
-        letter-spacing: .3px;
-    }
-
-    small,
-    .text-muted {
-        color: var(--muted) !important;
-    }
-   
-</style>
-
 
 <body>
 
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
+    <nav class="navbar navbar-expand-lg shadow-sm py-3">
+        <div class="container-fluid">
+
+            <button class="btn btn-light d-lg-none me-2" onclick="toggleSidebar()">
+                <i class="bi bi-list fs-4"></i>
+            </button>
 
             <a class="navbar-brand" href="{{ url('/') }}">
-                <i class="bi bi-heart-pulse me-2 text-primary"></i>
+                <i class="bi bi-heart-pulse text-primary me-2"></i>
                 CRM Médico
             </a>
 
             <div class="ms-auto">
-
                 @auth
                 <div class="dropdown">
-                    <button class="btn btn-outline-primary dropdown-toggle"
-                        data-bs-toggle="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="bi bi-person-circle me-1"></i>
                         {{ auth()->user()->name }}
                     </button>
-
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <a class="dropdown-item" href="{{ route('dashboard') }}">
-                                <i class="bi bi-speedometer2 me-2"></i>
-                                Dashboard
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
                             </a>
                         </li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-right me-2"></i>
-                                    Sair
+                                    <i class="bi bi-box-arrow-right me-2"></i> Sair
                                 </button>
                             </form>
                         </li>
@@ -232,72 +249,64 @@
                     Entrar
                 </a>
                 @endguest
-
             </div>
         </div>
     </nav>
 
-    <!-- LAYOUT -->
+    <!-- OVERLAY MOBILE -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
     <div class="container-fluid">
         <div class="row">
 
             <!-- SIDEBAR -->
-            <div class="col-md-3 col-lg-2 d-none d-md-block sidebar">
+            <nav id="sidebar" class="col-md-3 col-lg-2 sidebar">
                 <div class="list-group">
 
-                    <a href="{{ url('/dashboard') }}" class="list-group-item list-group-item-action active">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    <a href="{{ url('/dashboard') }}" class="list-group-item active">
+                        <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
 
                     @can('perfil_admin')
-                    <a href="{{ route('agenda') }}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-calendar-week me-2"></i>Agenda
+                    <a href="{{ route('agenda') }}" class="list-group-item">
+                        <i class="bi bi-calendar-week"></i> Agenda
                     </a>
-
-                    <a href="/consultas" class="list-group-item list-group-item-action">
-                        <i class="bi bi-clipboard2-pulse me-2"></i>Consultas
+                    <a href="/consultas" class="list-group-item">
+                        <i class="bi bi-clipboard2-pulse"></i> Consultas
                     </a>
-
-                    <a href="/pacientes" class="list-group-item list-group-item-action">
-                        <i class="bi bi-people me-2"></i>Pacientes
+                    <a href="/pacientes" class="list-group-item">
+                        <i class="bi bi-people"></i> Pacientes
                     </a>
-
-                    <a href="/medicos" class="list-group-item list-group-item-action">
-                        <i class="bi bi-person-badge me-2"></i>Médicos
+                    <a href="/medicos" class="list-group-item">
+                        <i class="bi bi-person-badge"></i> Médicos
                     </a>
-
-                    <a href="/pagamentos" class="list-group-item list-group-item-action">
-                        <i class="bi bi-cash-coin me-2"></i>Pagamentos
+                    <a href="/pagamentos" class="list-group-item">
+                        <i class="bi bi-cash-coin"></i> Pagamentos
                     </a>
-
-                    <a href="{{ route('config') }}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-gear me-2"></i>Configuração
+                    <a href="{{ route('config') }}" class="list-group-item">
+                        <i class="bi bi-gear"></i> Configuração
                     </a>
-                    @endcan
-
-                    @can('perfil_recepcao')
-                    <a href="/pacientes" class="list-group-item list-group-item-action">Pacientes</a>
-                    <a href="/medicos" class="list-group-item list-group-item-action">Médicos</a>
-                    <a href="/pagamentos" class="list-group-item list-group-item-action">Pagamentos</a>
-                    @endcan
-
-                    @can('perfil_medico')
-                    <a href="{{ route('agenda') }}" class="list-group-item list-group-item-action">Agenda</a>
-                    <a href="/consultas" class="list-group-item list-group-item-action">Consultas</a>
                     @endcan
 
                 </div>
-            </div>
+            </nav>
 
             <!-- CONTEÚDO -->
-            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <main class="col-lg-10 ms-sm-auto content-wrapper">
                 @yield('conteudo')
-            </div>
+            </main>
 
         </div>
     </div>
 
     <script src="{{ asset('assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('sidebarOverlay').classList.toggle('show');
+        }
+    </script>
 
 </body>
 

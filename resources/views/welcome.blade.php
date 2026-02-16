@@ -8,109 +8,172 @@
 
     <link rel="stylesheet" href="{{ asset('assets/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/bootstrap-icons/bootstrap-icons.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --primary: #5B5FEF;
+            --secondary: #22C1C3;
+            --dark: #0f172a;
+            --light: #f1f5f9;
+            --card: #ffffff;
+            --text: #334155;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f8f9fa;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+            color: var(--text);
         }
 
-        /* NAVBAR */
+        /* NAVBAR MODERNA */
         .navbar {
-            backdrop-filter: blur(10px);
-            background-color: rgba(13, 110, 253, 0.9) !important;
+            backdrop-filter: blur(14px);
+            background: rgba(15, 23, 42, 0.75) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .navbar a.navbar-brand {
+        .navbar-brand {
             font-weight: 700;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
         }
 
-        /* HERO */
-        .hero {
-            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
             color: #fff;
-            padding: 120px 0 80px;
+        }
+
+        .btn-gradient:hover {
+            opacity: .9;
+            transform: translateY(-1px);
+        }
+
+        /* HERO MODERNO */
+        .hero {
             position: relative;
-            text-align: center;
+            padding: 140px 0 100px;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            color: #fff;
             overflow: hidden;
-            border-radius: 0 0 60px 60px;
+            border-radius: 0 0 80px 80px;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            top: -200px;
+            left: -200px;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+            bottom: -200px;
+            right: -150px;
         }
 
         .hero h1 {
             font-weight: 700;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
         }
 
-        .hero p.lead {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .hero p {
+            font-size: 1.15rem;
+            opacity: .9;
         }
 
-        .hero .btn {
-            transition: all 0.3s ease;
-        }
-
-        .hero .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Feature Cards */
+        /* FEATURE CARDS MODERNOS */
         .feature-card {
-            border: none;
-            border-radius: 18px;
-            padding: 2rem 1.5rem;
-            background: #fff;
-            transition: all 0.3s ease;
+            background: var(--card);
+            border-radius: 22px;
+            padding: 2.2rem 1.8rem;
+            border: 1px solid #eef2f7;
+            transition: all .35s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         .feature-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 35px rgba(13, 110, 253, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
         }
 
-        .icon-box {
-            font-size: 38px;
-            margin-bottom: 1rem;
-        }
-
-        /* CTA */
-        .cta {
-            background: linear-gradient(135deg, #0d6efd, #0a58ca);
-            color: #fff;
-            padding: 80px 0;
-            text-align: center;
-        }
-
-        .cta .btn {
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .cta .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Footer */
-        footer {
-            background: #0a58ca;
-            color: #fff;
-            padding: 20px 0;
-        }
-
-        .avatar-circle {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #fff;
-            color: #0d6efd;
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-size: 30px;
+            margin: 0 auto 20px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        /* SEÇÃO FUNCIONALIDADES */
+        .section-title h2 {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .section-title p {
+            color: #64748b;
+        }
+
+        /* CTA MODERNO */
+        .cta {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #fff;
+            padding: 90px 0;
+            border-radius: 60px 60px 0 0;
+            margin-top: 60px;
+        }
+
+        .cta h3 {
+            font-weight: 700;
+        }
+
+        .cta .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 14px 28px;
+        }
+
+        /* FOOTER */
+        footer {
+            background: #020617;
+            color: #94a3b8;
+            padding: 25px 0;
+        }
+
+        /* AVATAR */
+        .avatar-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
@@ -118,7 +181,7 @@
 <body>
 
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <i class="bi bi-heart-pulse-fill"></i> CRM Médico
@@ -127,27 +190,27 @@
             <div class="ms-auto d-flex align-items-center gap-2">
 
                 @guest
-                <a href="{{ route('login') }}" class="btn btn-light btn-sm">
+                <a href="{{ route('login') }}" class="btn btn-light btn-sm rounded-pill px-3">
                     <i class="bi bi-box-arrow-in-right"></i> Entrar
                 </a>
                 @if(Route::has('register'))
-                <a href="{{ route('register') }}" class="btn btn-outline-light btn-sm">
+                <a href="{{ route('register') }}" class="btn btn-gradient btn-sm rounded-pill px-3">
                     <i class="bi bi-person-plus"></i> Cadastrar
                 </a>
                 @endif
                 @endguest
 
                 @auth
-                <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm">
+                <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm rounded-pill px-3">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
 
                 <div class="dropdown">
-                    <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                    <button class="btn btn-outline-light btn-sm rounded-pill dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
                         <div class="avatar-circle">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</div>
                         {{ auth()->user()->name }}
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
                         <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person"></i> Meu Perfil</a></li>
                         <li>
                             <hr class="dropdown-divider">
@@ -167,16 +230,24 @@
     </nav>
 
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero text-center">
         <div class="container position-relative">
-            <h1 class="mb-3">Sistema CRM para Clínicas e Consultórios</h1>
-            <p class="lead mb-4">Gerencie consultas, prontuários, pacientes e financeiro em um único sistema moderno.</p>
+            <h1 class="mb-3">Sistema CRM Inteligente para Clínicas</h1>
+            <p class="lead mb-4">Gerencie consultas, pacientes, prontuários e financeiro com uma experiência moderna e profissional.</p>
+
             <div class="d-flex justify-content-center flex-wrap gap-3">
-                <a href="{{ route('agendamento.publico') }}" class="btn btn-light btn-lg px-4 shadow-sm"><i class="bi bi-calendar-plus"></i> Agendar Consulta Online</a>
+                <a href="{{ route('agendamento.publico') }}" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-calendar-plus"></i> Agendar Consulta
+                </a>
+
                 @auth
-                <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-lg px-4"><i class="bi bi-speedometer2"></i> Ir para o Painel</a>
+                <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                    <i class="bi bi-speedometer2"></i> Acessar Painel
+                </a>
                 @else
-                <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg px-4"><i class="bi bi-speedometer2"></i> Área da Clínica</a>
+                <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                    <i class="bi bi-speedometer2"></i> Área da Clínica
+                </a>
                 @endauth
             </div>
         </div>
@@ -185,23 +256,26 @@
     <!-- FUNCIONALIDADES -->
     <section class="py-5">
         <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">Funcionalidades do Sistema</h2>
-                <p class="text-muted">Tudo que sua clínica precisa para uma gestão completa</p>
+            <div class="text-center mb-5 section-title">
+                <h2>Funcionalidades Principais</h2>
+                <p>Ferramentas completas para gestão eficiente da sua clínica</p>
             </div>
+
             <div class="row g-4">
                 @foreach ([
-                ['icon'=>'calendar-check','color'=>'primary','title'=>'Agenda de Consultas','desc'=>'Controle completo de agendamentos, bloqueios de horários e conflitos automáticos.'],
-                ['icon'=>'journal-medical','color'=>'success','title'=>'Prontuário Eletrônico','desc'=>'Histórico completo do paciente, exames, evoluções e prescrições médicas.'],
-                ['icon'=>'cash-coin','color'=>'warning','title'=>'Controle Financeiro','desc'=>'Gestão de pagamentos, faturamento e relatórios financeiros da clínica.'],
-                ['icon'=>'envelope-paper','color'=>'danger','title'=>'Lembretes Automáticos','desc'=>'Envio automático de e-mails e WhatsApp lembrando consultas aos pacientes.'],
-                ['icon'=>'person-badge','color'=>'info','title'=>'Gestão de Médicos','desc'=>'Controle de especialidades, agendas individuais e disponibilidade.'],
-                ['icon'=>'graph-up','color'=>'secondary','title'=>'Relatórios e Indicadores','desc'=>'Métricas de atendimentos, faturamento e desempenho da clínica.']
+                ['icon'=>'calendar-check','title'=>'Agenda Inteligente','desc'=>'Controle completo de consultas com bloqueios, conflitos automáticos e visual moderno.'],
+                ['icon'=>'journal-medical','title'=>'Prontuário Digital','desc'=>'Histórico clínico completo com evoluções, exames e prescrições.'],
+                ['icon'=>'cash-coin','title'=>'Financeiro Integrado','desc'=>'Controle de pagamentos, relatórios e faturamento da clínica.'],
+                ['icon'=>'envelope-paper','title'=>'Lembretes Automáticos','desc'=>'Envio automático de lembretes por WhatsApp e e-mail para pacientes.'],
+                ['icon'=>'person-badge','title'=>'Gestão de Médicos','desc'=>'Controle de agendas individuais, especialidades e disponibilidade.'],
+                ['icon'=>'graph-up','title'=>'Relatórios e Indicadores','desc'=>'Métricas detalhadas de atendimentos, faturamento e desempenho.']
                 ] as $f)
                 <div class="col-md-4">
-                    <div class="card feature-card h-100 p-4 shadow-sm text-center">
-                        <div class="icon-box text-{{ $f['color'] }}"><i class="bi bi-{{ $f['icon'] }}"></i></div>
-                        <h5 class="fw-bold mt-2">{{ $f['title'] }}</h5>
+                    <div class="feature-card text-center h-100">
+                        <div class="feature-icon">
+                            <i class="bi bi-{{ $f['icon'] }}"></i>
+                        </div>
+                        <h5 class="fw-bold">{{ $f['title'] }}</h5>
                         <p class="text-muted">{{ $f['desc'] }}</p>
                     </div>
                 </div>
@@ -211,13 +285,17 @@
     </section>
 
     <!-- CTA -->
-    <section class="cta">
+    <section class="cta text-center">
         <div class="container">
-            <h3 class="fw-bold mb-3">Pronto para transformar a gestão da sua clínica?</h3>
+            <h3 class="mb-4">Transforme a gestão da sua clínica hoje mesmo</h3>
             @auth
-            <a href="{{ route('dashboard') }}" class="btn btn-light btn-lg px-4 shadow"><i class="bi bi-speedometer2"></i> Acessar Painel</a>
+            <a href="{{ route('dashboard') }}" class="btn btn-light btn-lg shadow">
+                <i class="bi bi-speedometer2"></i> Ir para o Painel
+            </a>
             @else
-            <a href="{{ route('login') }}" class="btn btn-light btn-lg px-4 shadow"><i class="bi bi-box-arrow-in-right"></i> Entrar no Sistema</a>
+            <a href="{{ route('login') }}" class="btn btn-light btn-lg shadow">
+                <i class="bi bi-box-arrow-in-right"></i> Entrar no Sistema
+            </a>
             @endauth
         </div>
     </section>
@@ -225,7 +303,7 @@
     <!-- FOOTER -->
     <footer class="text-center">
         <div class="container">
-            <small>© {{ date('Y') }} CRM Médico - Todos os direitos reservados.</small>
+            <small>© {{ date('Y') }} CRM Médico — Sistema de Gestão para Clínicas</small>
         </div>
     </footer>
 
