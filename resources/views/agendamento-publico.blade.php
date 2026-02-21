@@ -43,7 +43,17 @@
 
     <div class="container pb-5" style="max-width:950px;">
         <div class="card card-agendamento shadow-lg p-4">
-
+            {{-- ERROS --}}
+            @if ($errors->any())
+            <div class="alert alert-danger shadow-sm">
+                <strong>Corrija os erros abaixo:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $hora)
+                    <li>{{ $hora }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
             @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -81,7 +91,7 @@
 
                     <div class="col-md-6">
                         <label>Médico</label>
-                        <select name="medico_id" id="medico_id" class="form-select" required>
+                        <select name="medico_id" id="medicoSelect" class="form-select" required>
                             <option value="">Selecione...</option>
                             @foreach($medicos as $medico)
                             <option value="{{ $medico->id }}">
@@ -93,13 +103,16 @@
 
                     <div class="col-md-6">
                         <label>Data</label>
-                        <input type="date" name="data" id="data" class="form-control" required>
+                        <select name="data" id="dataSelect" class="form-select" required>
+                            <option value="">Selecione o médico primeiro...</option>
+                        </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label>Horários</label>
-                        <div id="horarios" class="d-flex flex-wrap gap-2"></div>
-                        <input type="hidden" name="hora" id="hora">
+                        <label>Horário</label>
+                        <select name="hora" id="horaSelect" class="form-select" required>
+                            <option value="">Selecione a data</option>
+                        </select>
                     </div>
 
                     <div class="col-12">
@@ -151,14 +164,14 @@
 
                     } else {
                         feedback.innerHTML = `
-                    <span class="text-danger fw-semibold">
-                        CPF não cadastrado. Faça o pré-cadastro.
-                    </span>
-                    <br>
-                    <a href="/pre-cadastro" class="btn btn-sm btn-outline-danger mt-2">
-                        Fazer Pré-Cadastro
-                    </a>
-                `;
+                        <span class="text-danger fw-semibold">
+                            CPF não cadastrado. Faça o pré-cadastro.
+                        </span>
+                        <br>
+                        <a href="/pre-cadastro" class="btn btn-sm btn-outline-danger mt-2">
+                            Fazer Pré-Cadastro
+                        </a>
+                    `;
 
                         limparCampos();
                         bloquearFormulario();
@@ -181,38 +194,114 @@
             document.querySelector('[name="data_nascimento"]').value = '';
         }
 
-        // Horários
-        document.getElementById('data').addEventListener('change', carregarHorarios);
-        document.getElementById('medico_id').addEventListener('change', carregarHorarios);
+        // ===============================
+        // 🔹 CARREGAR DATAS DA AGENDA
+        // ===============================
+        const medicoSelect = document.getElementById('medicoSelect');
+        const dataSelect = document.getElementById('dataSelect');
+        const horaSelect = document.getElementById('horaSelect');
 
-        function carregarHorarios() {
-            let medico = document.getElementById('medico_id').value;
-            let data = document.getElementById('data').value;
-            if (!medico || !data) return;
+        medicoSelect.addEventListener('change', function() {
+            const medicoId = this.value;
 
-            fetch(`/agendamento/horarios?medico_id=${medico}&data=${data}`)
+            dataSelect.innerHTML = '<option>Carregando datas...</option>';
+            horaSelect.innerHTML = '<option value="">Selecione a data</option>';
+
+            if (!medicoId) return;
+
+            fetch(`/agendamento/datas?medico_id=${medicoId}`)
                 .then(res => res.json())
-                .then(horarios => {
-                    let div = document.getElementById('horarios');
-                    div.innerHTML = '';
+                .then(datas => {
+                    dataSelect.innerHTML = '<option value="">Selecione a data</option>';
 
-                    horarios.forEach(h => {
-                        let btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'btn btn-outline-primary';
-                        btn.innerText = h;
+                    datas.forEach(d => {
+                        const opt = document.createElement('option');
+                        opt.value = d;
 
-                        btn.onclick = () => {
-                            document.getElementById('hora').value = h;
-                            document.querySelectorAll('#horarios button').forEach(b => b.classList.remove('active'));
-                            btn.classList.add('active');
-                        };
+                        const [ano, mes, dia] = d.split('-');
+                        opt.textContent = `${dia}/${mes}/${ano}`;
 
-                        div.appendChild(btn);
+                        dataSelect.appendChild(opt);
                     });
                 });
+        });
+
+        // ===============================
+        // 🔹 CARREGAR HORÁRIOS DISPONÍVEIS
+        // ===============================
+        dataSelect.addEventListener('change', function() {
+            const medicoId = medicoSelect.value;
+            const data = this.value;
+
+            horaSelect.innerHTML = '<option>Carregando horários...</option>';
+
+            if (!medicoId || !data) return;
+
+            fetch(`/agendamento/horarios?medico_id=${medicoId}&data=${data}`)
+                .then(res => res.json())
+                .then(horarios => {
+                    horaSelect.innerHTML = '<option value="">Selecione o horário</option>';
+
+                    horarios.forEach(h => {
+                        const opt = document.createElement('option');
+                        opt.value = h;
+                        opt.textContent = h;
+                        horaSelect.appendChild(opt);
+                    });
+                });
+        });
+
+        // ===============================
+        // 🔹 VERIFICA HORÁRIO EM TEMPO REAL
+        // ===============================
+        horaSelect.addEventListener('change', function() {
+            const medicoId = medicoSelect.value;
+            const data = dataSelect.value;
+            const hora = horaSelect.value;
+
+            removeHoraFeedback();
+
+            if (!medicoId || !data || !hora) return;
+
+            fetch('{{ route("agendamento.verificarHora") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        medico_id: medicoId,
+                        data: data,
+                        hora: hora
+                    })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    const feedback = document.createElement('div');
+                    feedback.classList.add('invalid-feedback');
+                    feedback.textContent = res.mensagem;
+
+                    horaSelect.insertAdjacentElement('afterend', feedback);
+
+                    if (!res.disponivel) {
+                        horaSelect.classList.add('is-invalid');
+                        document.querySelector('button[type="submit"]').disabled = true;
+                    } else {
+                        horaSelect.classList.remove('is-invalid');
+                        document.querySelector('button[type="submit"]').disabled = false;
+                    }
+                })
+                .catch(err => console.error(err));
+        });
+
+        function removeHoraFeedback() {
+            const feedback = horaSelect.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.remove();
+            }
         }
     </script>
+
 
 </body>
 

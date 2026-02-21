@@ -60,14 +60,19 @@ class DashboardController extends Controller
                 ->get(),
 
             // ✅ variáveis que sua view usa
+            // Total recebido hoje
             'totalRecebido' => (clone $pagamentoQuery)
                 ->where('status', 'pago')
+                ->whereDate('data_pagamento', $hoje)
                 ->sum('valor'),
 
+            // Total pendente hoje
             'totalPendente' => (clone $pagamentoQuery)
                 ->where('status', 'pendente')
+                ->whereDate('data_pagamento', $hoje)
                 ->sum('valor'),
 
+            // Total geral do dia (pago + pendente, por exemplo)
             'totalHoje' => (clone $pagamentoQuery)
                 ->whereDate('data_pagamento', $hoje)
                 ->sum('valor'),

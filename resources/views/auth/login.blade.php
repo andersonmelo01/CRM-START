@@ -42,8 +42,34 @@
                         <i class="bi bi-heart-pulse login-icon"></i>
                         <h4 class="mt-2 fw-bold">CRM Médico</h4>
                         <p class="text-muted">Acesso ao sistema</p>
-                    </div>
+                        @if(session('aviso_validade'))
+                        <div class="alert alert-warning text-center">
+                            {{ session('aviso_validade') }}
+                        </div>
+                        @endif
+                        @if(session('erro_validade'))
+                        <div class="alert alert-danger text-center">
+                            {{ session('erro_validade') }}
+                        </div>
 
+                        {{-- BOTÃO PARA INSERIR LICENÇA OFFLINE --}}
+                        <button class="btn btn-outline-dark btn-sm mt-2" data-bs-toggle="collapse" data-bs-target="#licencaOffline">
+                            Inserir chave de licença offline
+                        </button>
+
+                        <div class="collapse mt-3" id="licencaOffline">
+                            <form method="POST" action="{{ route('licenca.offline') }}">
+                                @csrf
+                                <div class="input-group">
+                                    <input type="text" name="chave_licenca" class="form-control"
+                                        placeholder="Digite a chave de licença" required>
+                                    <button class="btn btn-success">Validar</button>
+                                </div>
+                            </form>
+                        </div>
+                        @endif
+
+                    </div>
                     {{-- ERROS --}}
                     @if ($errors->any())
                     <div class="alert alert-danger">

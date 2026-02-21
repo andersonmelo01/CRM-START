@@ -87,17 +87,17 @@
                     {{-- DATA --}}
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Data</label>
-                        <input type="date" name="data" class="form-control" required>
+                        <select name="data" id="dataSelect" class="form-select" required>
+                            <option value="">Selecione o médico primeiro</option>
+                        </select>
                     </div>
 
                     {{-- HORA --}}
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Hora</label>
-                        <input type="time"
-                            name="hora"
-                            class="form-control @error('hora') is-invalid @enderror"
-                            value="{{ old('hora') }}"
-                            required>
+                        <select name="hora" id="horaSelect" class="form-select @error('hora') is-invalid @enderror" required>
+                            <option value="">Selecione a hora</option>
+                        </select>
 
                         @error('hora')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -169,7 +169,6 @@
             </div>
         </div>
 
-
         {{-- ================= AÇÕES ================= --}}
         <div class="text-end mb-5">
             <a href="{{ route('consultas.index') }}"
@@ -224,6 +223,109 @@
 
 
     {{-- ================= JS ================= --}}
+    <script>
+        const medicoSelect = document.getElementById('medicoSelect');
+        const dataSelect = document.getElementById('dataSelect');
+        const horaSelect = document.getElementById('horaSelect');
+
+        let agendaCache = {}; // guarda horários livres do backend
+
+        // ==================== Mudança de médico ====================
+        medicoSelect.addEventListener('change', function() {
+            const medicoId = this.value;
+
+            dataSelect.innerHTML = '<option value="">Carregando datas...</option>';
+            horaSelect.innerHTML = '<option value="">Selecione a data</option>';
+            horaSelect.classList.remove('is-invalid');
+            removeHoraFeedback();
+
+            if (!medicoId) return;
+
+            fetch(`/agenda-medicos/disponivel/${medicoId}`)
+                .then(res => res.json())
+                .then(agenda => {
+                    agendaCache = agenda; // salva no cache
+                    dataSelect.innerHTML = '<option value="">Selecione a data</option>';
+
+                    // adiciona datas
+                    Object.keys(agenda).forEach(data => {
+                        const [ano, mes, dia] = data.split('-');
+                        const opt = document.createElement('option');
+                        opt.value = data;
+                        opt.textContent = `${dia}/${mes}/${ano}`;
+                        dataSelect.appendChild(opt);
+                    });
+                });
+        });
+
+        // ==================== Mudança de data ====================
+        dataSelect.addEventListener('change', function() {
+            const dataSelecionada = this.value;
+            horaSelect.innerHTML = '<option value="">Selecione a hora</option>';
+            horaSelect.classList.remove('is-invalid');
+            removeHoraFeedback();
+
+            if (!dataSelecionada || !agendaCache[dataSelecionada]) return;
+
+            // adiciona horários livres
+            agendaCache[dataSelecionada].forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h.hora;
+                opt.textContent = h.hora;
+                horaSelect.appendChild(opt);
+            });
+        });
+
+        // ==================== Validação em tempo real do horário ====================
+        // validação em tempo real do horário
+        horaSelect.addEventListener('change', function() {
+            const medicoId = medicoSelect.value;
+            const data = dataSelect.value;
+            const hora = horaSelect.value;
+
+            // remove mensagem antiga
+            removeHoraFeedback();
+
+            if (!medicoId || !data || !hora) return;
+
+            fetch('{{ route("consultas.verificarHora") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        medico_id: medicoId,
+                        data: data,
+                        hora: hora
+                    })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    const div = document.createElement('div');
+                    div.classList.add('invalid-feedback');
+                    div.textContent = res.mensagem;
+                    horaSelect.insertAdjacentElement('afterend', div);
+
+                    if (!res.disponivel) {
+                        horaSelect.classList.add('is-invalid');
+                    } else {
+                        horaSelect.classList.remove('is-invalid');
+                    }
+                })
+                .catch(err => console.error(err));
+        });
+
+        // função auxiliar para remover feedback antigo
+        function removeHoraFeedback() {
+            const feedback = horaSelect.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.remove();
+            }
+        }
+    </script>
+
+    {{-- ========== Modal ========= --}}
     <script>
         const buscarInput = document.getElementById('buscarPacienteModal');
         const lista = document.getElementById('listaPacientes');

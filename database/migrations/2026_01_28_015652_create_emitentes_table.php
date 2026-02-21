@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('uf', 2)->nullable();
             $table->string('mensagem_rodape')->nullable();
             $table->boolean('ativo')->default(true);
+            $table->date('validade');
             $table->timestamps();
         });
     }

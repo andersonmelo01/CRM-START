@@ -31,7 +31,7 @@
                 <select name="consulta_id" class="form-select">
                     @foreach($consultas as $c)
                     <option value="{{ $c->id }}">
-                        {{ $c->paciente->nome }} - {{ \Carbon\Carbon::parse($c->data)->format('d/m/Y') }}
+                        {{ $c->paciente->nome }} - {{ \Carbon\Carbon::parse($c->data)->format('d/m/Y') }} - {{ $c->hora }}
                     </option>
                     @endforeach
                 </select>

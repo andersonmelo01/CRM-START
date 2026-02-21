@@ -23,22 +23,32 @@ class ConsultaController extends Controller
 {
     public function index(Request $request)
     {
-        // Data selecionada ou hoje
-        $data = $request->get('data', now()->toDateString());
+        // Datas que possuem consultas criadas
+        $datasDisponiveis = Consulta::selectRaw('DATE(data) as data')
+            ->distinct()
+            ->orderBy('data')
+            ->pluck('data')
+            ->toArray();
 
-        // BUSCA AS CONSULTAS (ISSO ESTAVA FALTANDO)
+        $hoje = now()->toDateString();
+
+        // Se veio data do filtro, usa ela.
+        // Senão, usa hoje.
+        $data = $request->get('data', $hoje);
+
+        // Buscar consultas da data escolhida (mesmo que não tenha nenhuma)
         $consultas = Consulta::with(['paciente', 'medico', 'prontuario'])
-            ->where('data', $data)
+            ->whereDate('data', $data)
             ->orderBy('hora')
             ->get();
 
-        // ENVIA PARA A VIEW
         return view('consultas.index', [
             'consultas' => $consultas,
-            'data' => $data
+            'data' => $data,
+            'datasDisponiveis' => $datasDisponiveis
         ]);
     }
-
+    
     public function create(Request $request)
     {
         $data = $request->get('data', now()->toDateString());
@@ -88,11 +98,12 @@ class ConsultaController extends Controller
         }
 
         // ❌ conflito de consulta
-        $existe = Consulta::where([
-            'medico_id' => $request->medico_id,
-            'data'      => $request->data,
-            'hora'      => $request->hora
-        ])->exists();
+        $existe = Consulta::where('medico_id', $request->medico_id)
+            ->where('data', $request->data)
+            ->where('hora', $hora) // ✅ usar a hora normalizada
+            ->where('status', '!=', 'cancelada')
+            ->exists();
+
 
         if ($existe) {
             return back()
@@ -157,11 +168,27 @@ class ConsultaController extends Controller
     public function update(Request $request, Consulta $consulta)
     {
         $consulta->update([
-            'status' => $request->status,
+            'status'  => $request->status,
             'retorno' => $request->retorno ?? false
         ]);
 
-        return back();
+        // Envia email somente quando virar "agendada"
+        if ($consulta->status === 'agendada') {
+
+            // ================= EMAIL IMEDIATO =================
+            $consulta->load(['paciente', 'medico']);
+
+            if ($consulta->paciente && $consulta->paciente->email) {
+                try {
+                    \Mail::to($consulta->paciente->email)
+                        ->send(new \App\Mail\ConsultaAgendadaMail($consulta));
+                } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
+                    \Log::error('Erro ao enviar email: ' . $e->getMessage());
+                }
+            }
+        }
+
+        return back()->with('success', 'Agendamento atualizado com sucesso!');
     }
 
     public function destroy(Consulta $consulta)
@@ -256,5 +283,54 @@ class ConsultaController extends Controller
         $link = "https://wa.me/{$telefone}?text=" . urlencode($mensagem);
 
         return redirect()->away($link);
+    }
+
+    public function verificarHora(Request $request)
+    {
+        $request->validate([
+            'medico_id' => 'required|exists:medicos,id',
+            'data'      => 'required|date',
+            'hora'      => 'required',
+        ]);
+
+        $hora = Carbon::createFromFormat('H:i', $request->hora)->format('H:i:s');
+
+        // Verifica bloqueio
+        $bloqueado = Bloqueio::where('medico_id', $request->medico_id)
+            ->where('data', $request->data)
+            ->where(function ($q) use ($hora) {
+                $q->whereNull('hora_inicio')
+                    ->orWhere(function ($q) use ($hora) {
+                        $q->where('hora_inicio', '<=', $hora)
+                            ->where('hora_fim', '>=', $hora);
+                    });
+            })
+            ->exists();
+
+        if ($bloqueado) {
+            return response()->json([
+                'disponivel' => false,
+                'mensagem'   => 'Horário bloqueado para este médico'
+            ]);
+        }
+
+        // Verifica conflito com consultas já marcadas
+        $ocupado = Consulta::where('medico_id', $request->medico_id)
+            ->where('data', $request->data)
+            ->where('hora', $hora)
+            ->where('status', '!=', 'cancelada')
+            ->exists();
+
+        if ($ocupado) {
+            return response()->json([
+                'disponivel' => false,
+                'mensagem'   => 'Horário já ocupado'
+            ]);
+        }
+
+        return response()->json([
+            'disponivel' => true,
+            'mensagem'   => 'Horário disponível'
+        ]);
     }
 }

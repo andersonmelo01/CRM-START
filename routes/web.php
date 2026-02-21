@@ -4,12 +4,14 @@ use App\Http\Controllers\MedicoController;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\AgendaMedicoController;
 use App\Http\Controllers\AgendamentoPublicoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProntuarioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BloqueioController;
 use App\Http\Controllers\EmitenteController;
+use App\Http\Controllers\LicencaController;
 use App\Http\Controllers\PagamentoController;
 use App\Http\Controllers\PedidoExameController;
 use App\Http\Controllers\PreCadastroController;
@@ -28,6 +30,15 @@ Route::get('/agendar', [AgendamentoPublicoController::class, 'index'])->name('ag
 Route::post('/agendar', [AgendamentoPublicoController::class, 'store'])->name('agendamento.publico.store');
 Route::get('/agendamento/horarios', [AgendamentoPublicoController::class, 'horarios']);
 Route::get('/agendamento/verificar-cpf', [AgendamentoPublicoController::class, 'verificarCpf']);
+Route::get('/agendamento/datas', [AgendamentoPublicoController::class, 'datas']);
+Route::get('/agendamento/horarios', [AgendaMedicoController::class, 'horarios']);
+Route::post('/agendamento/verificar-hora', [AgendamentoPublicoController::class, 'verificarHora'])
+    ->name('agendamento.verificarHora');
+//licença
+Route::post('/licenca-offline', [LicencaController::class, 'validarOffline'])
+    ->name('licenca.offline');
+
+
 //pré-cadastro
 Route::get('/precadastro', function () {
     return view('pre-cadastro');
@@ -81,6 +92,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/agenda/consulta/{id}', [AgendaController::class, 'excluir']);
     Route::post('/agenda', [AgendaController::class, 'criar']);
 
+    Route::get('/agenda-medicos/disponivel/{medico}', [AgendaMedicoController::class, 'disponivel']);
+
+    Route::post('/consultas/verificar-hora', [ConsultaController::class, 'verificarHora'])
+        ->name('consultas.verificarHora');
+
+
 
     // Rotas de bloqueios
     Route::prefix('bloqueios')->group(function () {
@@ -94,8 +111,6 @@ Route::middleware(['auth'])->group(function () {
         // Bloqueados (URL diferente!)
         Route::get('/lista', [\App\Http\Controllers\BloqueioController::class, 'bloqueados'])->name('bloqueios.bloqueados');
     });
-
-
 
     Route::get('/emitente', [EmitenteController::class, 'edit'])->name('emitente.edit');
     Route::post('/emitente', [EmitenteController::class, 'store'])->name('emitente.store');
@@ -120,6 +135,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/medicos/{medicoId}/status-bloqueio', [MedicoController::class, 'statusBloqueio'])->name('medicos.statusBloqueio');
 });
+Route::resource('agenda-medicos', AgendaMedicoController::class)->middleware('auth');
+
 Route::get('/bloqueios/eventos', function () {
     return Bloqueio::get()->map(function ($b) {
         return [

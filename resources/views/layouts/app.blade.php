@@ -17,6 +17,9 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
@@ -33,6 +36,10 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(180deg, #f8fafc, #eef2f7);
             color: var(--text);
+        }
+
+        #calendar {
+            min-height: 600px;
         }
 
         /* NAVBAR */
@@ -271,6 +278,11 @@
                     <a href="{{ route('agenda') }}" class="list-group-item">
                         <i class="bi bi-calendar-week"></i> Agenda
                     </a>
+
+                    <a href="{{ route('agenda-medicos.index') }}" class="list-group-item">
+                        <i class="bi bi-calendar-plus"></i> Agenda Médica
+                    </a>
+
                     <a href="/consultas" class="list-group-item">
                         <i class="bi bi-clipboard2-pulse"></i> Consultas
                     </a>
@@ -287,12 +299,62 @@
                         <i class="bi bi-gear"></i> Configuração
                     </a>
                     @endcan
+                    @can('perfil_recepcao')
+                    <a href="{{ route('agenda') }}" class="list-group-item">
+                        <i class="bi bi-calendar-week"></i> Agenda
+                    </a>
+
+                    <a href="{{ route('agenda-medicos.index') }}" class="list-group-item">
+                        <i class="bi bi-calendar-plus"></i> Agenda Médica
+                    </a>
+
+                    <a href="/consultas" class="list-group-item">
+                        <i class="bi bi-clipboard2-pulse"></i> Consultas
+                    </a>
+                    <a href="/pacientes" class="list-group-item">
+                        <i class="bi bi-people"></i> Pacientes
+                    </a>
+                    <a href="/medicos" class="list-group-item">
+                        <i class="bi bi-person-badge"></i> Médicos
+                    </a>
+                    <a href="/pagamentos" class="list-group-item">
+                        <i class="bi bi-cash-coin"></i> Pagamentos
+                    </a>
+                    @endcan
+
+                    @can('perfil_medico')
+                    <a href="{{ route('agenda') }}" class="list-group-item">
+                        <i class="bi bi-calendar-week"></i> Agenda
+                    </a>
+
+                    <a href="{{ route('agenda-medicos.index') }}" class="list-group-item">
+                        <i class="bi bi-calendar-plus"></i> Agenda Médica
+                    </a>
+
+                    <a href="/consultas" class="list-group-item">
+                        <i class="bi bi-clipboard2-pulse"></i> Consultas
+                    </a>
+
+                    @endcan
+
 
                 </div>
             </nav>
 
             <!-- CONTEÚDO -->
             <main class="col-lg-10 ms-sm-auto content-wrapper">
+                @if(session('erro_validade'))
+                <div class="col-md-6 alert alert-danger text-center">
+                    {{ session('erro_validade') }}
+                </div>
+                @endif
+
+                @if(session('aviso_validade'))
+                <div class="col-md-6 alert alert-warning text-center">
+                    {{ session('aviso_validade') }}
+                </div>
+                @endif
+
                 @yield('conteudo')
             </main>
 
@@ -307,6 +369,10 @@
             document.getElementById('sidebarOverlay').classList.toggle('show');
         }
     </script>
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+    @yield('scripts')
 
 </body>
 

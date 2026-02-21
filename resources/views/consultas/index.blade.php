@@ -82,9 +82,12 @@
 
                 <tbody>
                     @forelse($consultas as $c)
-                    @php $pagamento = $c->pagamento; @endphp
+                    @php
+                    $pagamento = $c->pagamento;
+                    $bloqueado = in_array($c->status, ['pre-cadastro','cancelada']);
+                    @endphp
 
-                    <tr class="@if($c->status == 'pre-cadastro') table-warning @endif">
+                    <tr class="@if($bloqueado) table-warning @endif">
                         <td class="fw-bold text-primary">{{ $c->hora }}</td>
 
                         <td>
@@ -111,7 +114,7 @@
 
                         {{-- PRONTUÁRIO --}}
                         <td>
-                            @if($c->status != 'pre-cadastro')
+                            @if(!$bloqueado)
                             @if($c->prontuario)
                             <a href="{{ route('prontuarios.show',$c) }}" class="btn btn-info btn-sm">
                                 <i class="bi bi-eye"></i>
@@ -128,7 +131,7 @@
 
                         {{-- EXAMES --}}
                         <td>
-                            @if($c->status != 'pre-cadastro')
+                            @if(!$bloqueado)
                             <a href="{{ route('consultas.exames',$c) }}" class="btn btn-outline-dark btn-sm">
                                 <i class="bi bi-clipboard2-pulse"></i>
                             </a>
@@ -165,7 +168,7 @@
 
                         {{-- WHATSAPP --}}
                         <td>
-                            @if($c->status != 'pre-cadastro')
+                            @if(!$bloqueado)
                             @if($c->paciente && $c->paciente->telefone)
                             <a href="{{ route('consultas.whatsapp', $c) }}" target="_blank" class="btn btn-success btn-sm">
                                 <i class="bi bi-whatsapp"></i>
@@ -182,15 +185,13 @@
                             <span class="badge bg-secondary">Sem telefone</span>
                             @endif
                             @endif
-
-
                         </td>
 
                         {{-- ALTERAR STATUS --}}
                         <td>
                             @php
                             $user = auth()->user();
-                            $podeAlterar = in_array($user->perfil, ['admin','recepcao']); // ajuste conforme sua coluna de perfil
+                            $podeAlterar = in_array($user->perfil, ['admin','recepcao']);
                             @endphp
 
                             @if($podeAlterar)
@@ -209,8 +210,6 @@
                             <span class="badge bg-secondary">Sem permissão</span>
                             @endif
                         </td>
-
-
                     </tr>
 
                     {{-- MODAL PAGAMENTO --}}
@@ -271,7 +270,6 @@
             </table>
         </div>
     </div>
-
 
 </div>
 @endsection
